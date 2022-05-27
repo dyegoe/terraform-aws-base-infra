@@ -47,3 +47,9 @@ data "aws_subnet" "this" {
     module.vpc
   ]
 }
+
+##### Get zone id using zone domain #####
+data "aws_route53_zone" "this" {
+  name         = var.zone_domain
+  private_zone = false
+}
