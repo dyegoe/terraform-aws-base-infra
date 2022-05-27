@@ -42,11 +42,6 @@ variable "instances" {
   }))
 }
 
-variable "zone_id" {
-  description = "ID of the Route53 zone"
-  type        = string
-}
-
 variable "zone_domain" {
   description = "Domain on Route53"
   type        = string
