@@ -1,5 +1,5 @@
-resource "aws_iam_role" "instance" {
-  name                  = "${var.resource_name_prefix}-instance"
+resource "aws_iam_role" "ec2_assume_role" {
+  name                  = "${var.resource_name_prefix}-ec2-assume-role"
   force_detach_policies = true
   assume_role_policy    = <<EOF
 {
@@ -16,15 +16,27 @@ resource "aws_iam_role" "instance" {
   ]
 }
 EOF
-
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_ec2_ssm_policy" {
-  role       = aws_iam_role.instance.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+data "aws_iam_policy_document" "ec2_assume_role" {
+  statement {
+    actions = [
+      "ec2:DescribeInstances"
+    ]
+
+    resources = [
+      "arn:aws:ec2:*:${data.aws_caller_identity.this.account_id}:instance/*",
+    ]
+  }
 }
 
-resource "aws_iam_instance_profile" "instance" {
-  name = "${var.resource_name_prefix}-instance"
-  role = aws_iam_role.instance.name
+resource "aws_iam_policy" "ec2_assume_role" {
+  name   = "${var.resource_name_prefix}-ec2-assume-role"
+  path   = "/${var.resource_name_prefix}/"
+  policy = data.aws_iam_policy_document.ec2_assume_role.json
+}
+
+resource "aws_iam_instance_profile" "ec2_assume_role" {
+  name = "${var.resource_name_prefix}-ec2-assume-role"
+  role = aws_iam_role.ec2_assume_role.name
 }
