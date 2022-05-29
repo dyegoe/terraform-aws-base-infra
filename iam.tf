@@ -1,4 +1,4 @@
-resource "aws_iam_role" "basic-instance" {
+resource "aws_iam_role" "instance" {
   name                  = "${var.resource_name_prefix}-instance"
   force_detach_policies = true
   assume_role_policy    = <<EOF
