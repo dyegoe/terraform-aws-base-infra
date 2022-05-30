@@ -1,5 +1,5 @@
 ##### Create volumes #####
-resource "aws_ebs_volume" "this" {
+resource "aws_ebs_volume" "this_to_create" {
   for_each          = local.additional_disks_to_create
   availability_zone = each.value.availability_zone
   size              = each.value.size
@@ -13,15 +13,15 @@ resource "aws_ebs_volume" "this" {
 }
 
 #### Attach created volumes to the instance #####
-resource "aws_volume_attachment" "this" {
+resource "aws_volume_attachment" "this_to_create" {
   for_each    = local.additional_disks_to_create
   device_name = "/dev/${each.value.device_name}"
-  volume_id   = aws_ebs_volume.this[each.key].id
+  volume_id   = aws_ebs_volume.this_to_create[each.key].id
   instance_id = aws_instance.this[each.value.instance].id
 }
 
 #### Attach volumes to the instances #####
-resource "aws_volume_attachment" "this" {
+resource "aws_volume_attachment" "this_to_attach" {
   for_each    = local.additional_disks_to_attach
   device_name = "/dev/${each.value.device_name}"
   volume_id   = each.value.volume_id
