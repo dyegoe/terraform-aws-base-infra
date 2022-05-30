@@ -19,7 +19,7 @@ locals {
         availability_zone = i.availability_zone
         device_name       = device_name
         size              = d.size
-        tags              = merge({ "mount_point" = d.mount_point }, i.tags)
+        tags              = merge({ "Mount_Point" = d.mount_point }, i.tags)
       }
     ]
   ])
