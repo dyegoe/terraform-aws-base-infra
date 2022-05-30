@@ -32,6 +32,7 @@ variable "instances" {
     additional_disks = map(object({ # Let it empty if there aren't any additional disks
       size        = number
       mount_point = string
+      volume_id   = string
     }))
     tags              = map(string)
     availability_zone = string

@@ -19,18 +19,29 @@ locals {
         availability_zone = i.availability_zone
         device_name       = device_name
         size              = d.size
-        tags              = merge({ "Mount_Point" = d.mount_point }, i.tags)
+        volume_id         = d.volume_id
+        tags              = merge({ "mount_point" = d.mount_point }, i.tags)
       }
     ]
   ])
-  #### Create a map of additional disks to iterate #####
-  # additional_disks = {
-  #   for _, a in local.additional_disks_tmp : "${a.instance}_${a.device_name}" => {
-  #     instance          = a.instance
-  #     availability_zone = a.availability_zone
-  #     device_name       = a.device_name
-  #     size              = a.size
-  #     tags              = a.tags
-  #   }
-  # }
+  #### Create a map of additional disks to create #####
+  additional_disks_to_create = {
+    for _, a in local.additional_disks_tmp : "${a.instance}_${a.device_name}" => {
+      instance          = a.instance
+      availability_zone = a.availability_zone
+      device_name       = a.device_name
+      size              = a.size
+      tags              = a.tags
+    } if a.volume_id == ""
+  }
+  #### Create a map of additional disks to attach #####
+  additional_disks_to_attach = {
+    for _, a in local.additional_disks_tmp : "${a.instance}_${a.device_name}" => {
+      instance          = a.instance
+      availability_zone = a.availability_zone
+      device_name       = a.device_name
+      volume_id         = a.volume_id
+      tags              = a.tags
+    } if a.volume_id != ""
+  }
 }
