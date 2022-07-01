@@ -8,6 +8,7 @@ resource "aws_instance" "this" {
   subnet_id               = data.aws_subnet.this[each.key].id
   key_name                = var.key_name
   monitoring              = true
+  iam_instance_profile    = aws_iam_instance_profile.ec2_assume_role.name
   vpc_security_group_ids  = [module.security_group[each.key].security_group_id]
   user_data_base64        = data.template_cloudinit_config.ec2_instance.rendered
   credit_specification {

@@ -35,14 +35,14 @@ data "aws_ami" "amazon_linux_2" {
 }
 
 ##### Just get the current default tags ####
-data "aws_default_tags" "current" {}
+data "aws_default_tags" "this" {}
 
 ##### Locate the subnet to put the instance #####
 data "aws_subnet" "this" {
   for_each          = var.instances
   vpc_id            = module.vpc.vpc_id
   availability_zone = each.value.availability_zone
-  tags              = data.aws_default_tags.current.tags
+  tags              = data.aws_default_tags.this.tags
   depends_on = [
     module.vpc
   ]
@@ -53,3 +53,6 @@ data "aws_route53_zone" "this" {
   name         = var.zone_domain
   private_zone = false
 }
+
+##### Get current caller identity #####
+data "aws_caller_identity" "this" {}

@@ -26,10 +26,14 @@ variable "key_name" {
 variable "instances" {
   description = "Map of objects to describe instances"
   type = map(object({
-    ami_id            = string
-    instance_type     = string
-    disk_size         = number
-    additional_disks  = map(number) # Let it empty if there aren't any additional disks
+    ami_id        = string
+    instance_type = string
+    disk_size     = number
+    additional_disks = map(object({ # Let it empty if there aren't any additional disks
+      size        = number
+      mount_point = string
+      volume_id   = string
+    }))
     tags              = map(string)
     availability_zone = string
     ingress_sg_rules = list(object({ # Let it empty if there aren't ingress rules

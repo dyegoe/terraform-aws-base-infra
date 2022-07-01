@@ -13,24 +13,35 @@ locals {
   }
   ##### Temporary transformation of additional disks #####
   additional_disks_tmp = flatten([
-    for instance, _ in var.instances : [
-      for device_name, size in var.instances[instance].additional_disks : {
+    for instance, i in var.instances : [
+      for device_name, d in i.additional_disks : {
         instance          = instance
-        availability_zone = var.instances[instance].availability_zone
+        availability_zone = i.availability_zone
         device_name       = device_name
-        size              = size
-        tags              = var.instances[instance].tags
+        size              = d.size
+        volume_id         = d.volume_id
+        tags              = merge({ "Mount_Point" = d.mount_point }, i.tags)
       }
     ]
   ])
-  #### Create a map of additional disks to iterate #####
-  additional_disks = {
-    for _, additional_disk in local.additional_disks_tmp : "${additional_disk.instance}_${additional_disk.device_name}" => {
-      instance          = additional_disk.instance
-      availability_zone = additional_disk.availability_zone
-      device_name       = additional_disk.device_name
-      size              = additional_disk.size
-      tags              = additional_disk.tags
-    }
+  #### Create a map of additional disks to create #####
+  additional_disks_to_create = {
+    for _, a in local.additional_disks_tmp : "${a.instance}_${a.device_name}" => {
+      instance          = a.instance
+      availability_zone = a.availability_zone
+      device_name       = a.device_name
+      size              = a.size
+      tags              = a.tags
+    } if a.volume_id == ""
+  }
+  #### Create a map of additional disks to attach #####
+  additional_disks_to_attach = {
+    for _, a in local.additional_disks_tmp : "${a.instance}_${a.device_name}" => {
+      instance          = a.instance
+      availability_zone = a.availability_zone
+      device_name       = a.device_name
+      volume_id         = a.volume_id
+      tags              = a.tags
+    } if a.volume_id != ""
   }
 }
