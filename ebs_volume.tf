@@ -6,10 +6,13 @@ resource "aws_ebs_volume" "this_to_create" {
   type              = var.volume_type
   tags = merge(
     {
-      "Name" = "${var.resource_name_prefix}-${each.value.instance}"
+      "Name" = "${var.resource_name_prefix}-${each.value.instance}-${each.value.device_name}"
     },
     each.value.tags
   )
+  lifecycle {
+    prevent_destroy = each.value.prevent_destroy
+  }
 }
 
 #### Attach created volumes to the instance #####

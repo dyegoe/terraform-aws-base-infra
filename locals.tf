@@ -3,11 +3,12 @@ locals {
   ingress_with_cidr_blocks = {
     for instance, v in var.instances : instance => [
       for _, rule in v.ingress_sg_rules : {
-        from_port   = rule.from_port
-        to_port     = rule.to_port
-        protocol    = rule.protocol
-        description = rule.description
-        cidr_blocks = join(",", rule.cidr_blocks)
+        from_port       = rule.from_port
+        to_port         = rule.to_port
+        protocol        = rule.protocol
+        description     = rule.description
+        cidr_blocks     = join(",", rule.cidr_blocks)
+        prevent_destroy = true
       }
     ]
   }
