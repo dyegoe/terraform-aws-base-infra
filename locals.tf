@@ -3,12 +3,11 @@ locals {
   ingress_with_cidr_blocks = {
     for instance, v in var.instances : instance => [
       for _, rule in v.ingress_sg_rules : {
-        from_port       = rule.from_port
-        to_port         = rule.to_port
-        protocol        = rule.protocol
-        description     = rule.description
-        cidr_blocks     = join(",", rule.cidr_blocks)
-        prevent_destroy = true
+        from_port   = rule.from_port
+        to_port     = rule.to_port
+        protocol    = rule.protocol
+        description = rule.description
+        cidr_blocks = join(",", rule.cidr_blocks)
       }
     ]
   }
@@ -33,6 +32,7 @@ locals {
       device_name       = a.device_name
       size              = a.size
       tags              = a.tags
+      prevent_destroy   = true
     } if a.volume_id == ""
   }
   #### Create a map of additional disks to attach #####
