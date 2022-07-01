@@ -32,7 +32,6 @@ locals {
       device_name       = a.device_name
       size              = a.size
       tags              = a.tags
-      prevent_destroy   = true
     } if a.volume_id == ""
   }
   #### Create a map of additional disks to attach #####

@@ -11,7 +11,7 @@ resource "aws_ebs_volume" "this_to_create" {
     each.value.tags
   )
   lifecycle {
-    prevent_destroy = each.value.prevent_destroy
+    prevent_destroy = true
   }
 }
 
