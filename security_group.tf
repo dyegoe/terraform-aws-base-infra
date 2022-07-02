@@ -6,7 +6,7 @@ module "security_group" {
   name        = "${var.resource_name_prefix}-${each.key}"
   description = "Access related to ${var.resource_name_prefix}-${each.key}"
   vpc_id      = module.vpc.vpc_id
-  tags        = { "name" = "${var.resource_name_prefix}-${each.key}" }
+  tags        = { "Name" = "${var.resource_name_prefix}-${each.key}" }
   egress_with_cidr_blocks = [
     {
       from_port   = 0

@@ -2,7 +2,7 @@
 resource "aws_eip" "this" {
   for_each = var.instances
   vpc      = true
-  tags     = { "name" = "${var.resource_name_prefix}-${each.key}" }
+  tags     = { "Name" = "${var.resource_name_prefix}-${each.key}" }
 }
 
 ##### Associate it to the instance #####
