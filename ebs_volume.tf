@@ -17,16 +17,18 @@ resource "aws_ebs_volume" "create" {
 
 #### Attach created volumes to the instance #####
 resource "aws_volume_attachment" "create" {
-  for_each    = local.additional_disks_to_create
-  device_name = "/dev/${each.value.device_name}"
-  volume_id   = aws_ebs_volume.create[each.key].id
-  instance_id = aws_instance.this[each.value.instance].id
+  for_each                       = local.additional_disks_to_create
+  device_name                    = "/dev/${each.value.device_name}"
+  volume_id                      = aws_ebs_volume.create[each.key].id
+  instance_id                    = aws_instance.this[each.value.instance].id
+  stop_instance_before_detaching = true
 }
 
 #### Attach volumes to the instances #####
 resource "aws_volume_attachment" "attach" {
-  for_each    = local.additional_disks_to_attach
-  device_name = "/dev/${each.value.device_name}"
-  volume_id   = each.value.volume_id
-  instance_id = aws_instance.this[each.value.instance].id
+  for_each                       = local.additional_disks_to_attach
+  device_name                    = "/dev/${each.value.device_name}"
+  volume_id                      = each.value.volume_id
+  instance_id                    = aws_instance.this[each.value.instance].id
+  stop_instance_before_detaching = true
 }
