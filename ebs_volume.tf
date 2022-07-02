@@ -6,7 +6,7 @@ resource "aws_ebs_volume" "create" {
   type              = var.volume_type
   tags = merge(
     {
-      "Name" = "${var.resource_name_prefix}-${each.value.instance}-${each.value.device_name}"
+      "name" = "${var.resource_name_prefix}-${each.value.instance}-${each.value.device_name}"
     },
     each.value.tags
   )

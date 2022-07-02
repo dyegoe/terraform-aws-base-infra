@@ -20,7 +20,7 @@ locals {
         device_name       = device_name
         size              = d.size
         volume_id         = d.volume_id
-        tags              = merge({ "Mount_Point" = d.mount_point }, i.tags)
+        tags              = merge({ "mount_point" = d.mount_point }, i.tags)
       }
     ]
   ])
