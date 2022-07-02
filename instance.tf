@@ -29,7 +29,7 @@ resource "aws_instance" "this" {
   tags = merge(
     {
       "Name"        = "${var.resource_name_prefix}-${each.key}"
-      "Zone_Domain" = "${var.zone_domain}"
+      "zone_domain" = "${var.zone_domain}"
     },
     each.value.tags
   )
