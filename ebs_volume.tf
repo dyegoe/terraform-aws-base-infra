@@ -1,3 +1,20 @@
+##### Create volumes prevent destroy #####
+resource "aws_ebs_volume" "create_prevent_destroy" {
+  for_each          = local.additional_disks_to_create_prevent_destroy
+  availability_zone = each.value.availability_zone
+  size              = each.value.size
+  type              = var.volume_type
+  tags = merge(
+    {
+      "Name" = "${var.resource_name_prefix}-${each.value.instance}-${each.value.device_name}"
+    },
+    each.value.tags
+  )
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
 ##### Create volumes #####
 resource "aws_ebs_volume" "create" {
   for_each          = local.additional_disks_to_create
@@ -11,7 +28,7 @@ resource "aws_ebs_volume" "create" {
     each.value.tags
   )
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
 
