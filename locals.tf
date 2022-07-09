@@ -20,7 +20,7 @@ locals {
         device_name       = device_name
         size              = d.size
         volume_id         = d.volume_id
-        prevent_destroy   = prevent_destroy == false ? false : true
+        prevent_destroy   = d.prevent_destroy == false ? false : true
         tags              = merge({ "mount_point" = d.mount_point }, i.tags)
       }
     ]
@@ -33,7 +33,6 @@ locals {
       device_name       = a.device_name
       size              = a.size
       tags              = a.tags
-      prevent_destroy   = a.prevent_destroy
     } if a.volume_id == "" && a.prevent_destroy == true
   }
   #### Create a map of additional disks to create #####
@@ -44,7 +43,6 @@ locals {
       device_name       = a.device_name
       size              = a.size
       tags              = a.tags
-      prevent_destroy   = a.prevent_destroy
     } if a.volume_id == "" && a.prevent_destroy == false
   }
   #### Create a map of additional disks to attach #####
@@ -55,7 +53,6 @@ locals {
       device_name       = a.device_name
       volume_id         = a.volume_id
       tags              = a.tags
-      prevent_destroy   = a.prevent_destroy
     } if a.volume_id != ""
   }
 }
