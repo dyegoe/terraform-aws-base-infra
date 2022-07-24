@@ -1,0 +1,44 @@
+formatter: markdown table
+
+version: 0.16.0
+
+header-from: main.tf
+
+recursive:
+  enabled: false
+
+sections:
+  hide: []
+  show: [header, requirements, providers, modules, resources, inputs, outputs]
+
+output:
+  file: "README.md"
+  mode: replace
+  template: |-
+    <!-- BEGIN_TF_DOCS -->
+    {{ .Content }}
+
+    <!-- END_TF_DOCS -->
+
+output-values:
+  enabled: false
+  from: ""
+
+sort:
+  enabled: true
+  by: name
+
+settings:
+  anchor: false
+  color: true
+  default: true
+  description: false
+  escape: true
+  hide-empty: false
+  html: false
+  indent: 2
+  lockfile: true
+  read-comments: true
+  required: true
+  sensitive: true
+  type: true

@@ -1,30 +1,34 @@
 variable "resource_name_prefix" {
   description = "Specify a name prefix for the resources"
   type        = string
+  default     = "example-dev"
 }
 
 variable "availability_zones" {
   description = "A list of availability zones"
   type        = list(string)
+  default     = ["us-east-1a", "us-east-1b", "us-east-1c"]
 }
 
 variable "vpc_cidr" {
   description = "VPC CIDR"
   type        = string
+  default     = "10.250.0.0/26"
 }
 
 variable "vpc_cidr_subnets_public" {
   description = "List of public subnets' CIDR"
   type        = list(string)
+  default     = ["10.250.0.0/28", "10.250.0.16/28", "10.250.0.32/28"]
 }
 
 variable "key_name" {
-  description = "Key name already created on AWS"
+  description = "Pre-existent key name created on the same region and AWS account that you are creating the resources. It should match `availabilty` zones."
   type        = string
 }
 
 variable "instances" {
-  description = "Map of objects to describe instances"
+  description = "Map of objects to describe instances."
   type = map(object({
     ami_id        = string
     instance_type = string
@@ -48,33 +52,35 @@ variable "instances" {
 }
 
 variable "zone_domain" {
-  description = "Domain on Route53"
+  description = "A already hosted Route53 domain under the same AWS account that you are creating the resource."
   type        = string
 }
 
 variable "ssh_port" {
-  description = "The SSH port number"
+  description = "SSH port number for the default SSH security group rule."
   type        = number
+  default     = 22
 }
 
 variable "ssh_port_cidr_blocks" {
-  description = "CIDR blocks, list of strings"
+  description = "CIDR blocks to allow SSH access."
   type        = list(string)
+  default     = ["0.0.0.0/0"]
 }
 
 variable "volume_type" {
-  description = "Volume Type"
+  description = "EBS Volume Type."
   type        = string
   default     = "gp2"
 }
 
 variable "cloud_init_user" {
-  description = "User to add to the instances using cloud-init"
+  description = "User to add to the instances using cloud-init."
   type        = string
   default     = "ansible"
 }
 
 variable "cloud_init_public_key" {
-  description = "Public key to add to the instances using cloud-init"
+  description = "Public key to add to the instances using cloud-init."
   type        = string
 }
