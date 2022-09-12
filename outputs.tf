@@ -1,4 +1,5 @@
 output "instances" {
+  description = "It returns an object of all instances created by the module."
   value = {
     for instance, _ in var.instances : instance => {
       ami                 = data.aws_ami.amazon_linux_2.id != aws_instance.this[instance].ami ? "New AMI: ${data.aws_ami.amazon_linux_2.id}" : "AMI is up-to-date"
