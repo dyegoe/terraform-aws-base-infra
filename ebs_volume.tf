@@ -15,6 +15,15 @@ resource "aws_ebs_volume" "create_prevent_destroy" {
   }
 }
 
+#### Attach created volumes (prevent destroy) to the instance #####
+resource "aws_volume_attachment" "create_prevent_destroy" {
+  for_each                       = local.additional_disks_to_create_prevent_destroy
+  device_name                    = "/dev/${each.value.device_name}"
+  volume_id                      = aws_ebs_volume.create_prevent_destroy[each.key].id
+  instance_id                    = aws_instance.this[each.value.instance].id
+  stop_instance_before_detaching = true
+}
+
 ##### Create volumes #####
 resource "aws_ebs_volume" "create" {
   for_each          = local.additional_disks_to_create
