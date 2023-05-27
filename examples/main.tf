@@ -14,6 +14,7 @@ locals {
     Terraform   = "true"
     Project     = local.project
   }
+  allowed_cidr_blocks = ["0.0.0.0/0"]
 }
 
 provider "aws" {
@@ -47,11 +48,11 @@ module "aws-base-infra" {
 
   ssh = {
     port              = 22
-    allow_cidr_blocks = ["0.0.0.0/0"]
+    allow_cidr_blocks = local.allowed_cidr_blocks
   }
 
   ingress_sg_rules = [
-    { from_port = 443, to_port = 443, protocol = "tcp", description = "HTTPS Port", cidr_blocks = ["0.0.0.0/0"] }
+    { from_port = 443, to_port = 443, protocol = "tcp", description = "HTTPS Port", cidr_blocks = local.allowed_cidr_blocks }
   ]
 
   instances = {
@@ -67,37 +68,41 @@ module "aws-base-infra" {
         }
       }
       ingress_sg_rules = [
-        { from_port = 80, to_port = 80, protocol = "tcp", description = "HTTP Port", cidr_blocks = ["0.0.0.0/0"] }
+        { from_port = 80, to_port = 80, protocol = "tcp", description = "HTTP Port", cidr_blocks = local.allowed_cidr_blocks }
       ]
       tags = {
         Additional = "Tag"
       }
     }
-    # node1 = {
-    #   ami_id            = data.aws_ssm_parameter.ami_id.value
-    #   instance_type     = "t3.nano"
-    #   availability_zone = "a"
-    #   disk_size         = 8
-    #   additional_disks = {
-    #     "sdb" = {
-    #       size            = 1
-    #       mount_point     = "/data"
-    #       prevent_destroy = true
-    #     }
-    #     "sdd" = {
-    #       size        = 1
-    #       mount_point = "/srv"
-    #       volume_id   = "vol-0c3eb3655dd853f3c"
-    #     }
-    #   }
-    #   ingress_sg_rules = [
-    #     { from_port = 80, to_port = 80, protocol = "tcp", description = "HTTP Port", cidr_blocks = ["0.0.0.0/0"] }
-    #   ]
-    #   tags = {
-    #     Additional = "Tag"
-    #   }
-    # }
+    node1 = {
+      ami_id            = data.aws_ssm_parameter.ami_id.value
+      instance_type     = "t3.nano"
+      availability_zone = "a"
+      disk_size         = 8
+      additional_disks = {
+        "sdb" = {
+          size            = 1
+          mount_point     = "/data"
+          prevent_destroy = true
+        }
+        "sdd" = {
+          size        = 1
+          mount_point = "/srv"
+          volume_id   = "vol-0c3eb3655dd853f3c"
+        }
+      }
+      ingress_sg_rules = [
+        { from_port = 80, to_port = 80, protocol = "tcp", description = "HTTP Port", cidr_blocks = local.allowed_cidr_blocks }
+      ]
+      tags = {
+        Additional = "Tag"
+      }
+    }
   }
+}
+
+output "ssh" {
+  value = module.aws-base-infra.ssh
 }
 
 output "instances" {

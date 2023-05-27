@@ -32,3 +32,4 @@ No inputs.
 | Name | Description |
 |------|-------------|
 | instances | n/a |
+| ssh | n/a |
