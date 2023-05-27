@@ -1,4 +1,5 @@
 output "ssh" {
+  description = "It returns an object of SSH connection details."
   value = {
     port              = var.ssh.port
     allow_cidr_blocks = var.ssh.allow_cidr_blocks

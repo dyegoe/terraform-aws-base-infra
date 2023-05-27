@@ -66,4 +66,4 @@ It creates:
 | Name | Description |
 |------|-------------|
 | instances | It returns an object of all instances created by the module. |
-| ssh | n/a |
+| ssh | It returns an object of SSH connection details. |
