@@ -1,19 +1,24 @@
-##### Create EC2 instance #####
 resource "aws_instance" "this" {
-  for_each                = var.instances
+  for_each = var.instances
+
   ami                     = each.value.ami_id
   disable_api_termination = false
   ebs_optimized           = true
   instance_type           = each.value.instance_type
-  subnet_id               = data.aws_subnet.this[each.key].id
-  key_name                = var.key_name
-  monitoring              = true
-  iam_instance_profile    = aws_iam_instance_profile.ec2_assume_role.name
-  vpc_security_group_ids  = [module.security_group[each.key].security_group_id]
-  user_data_base64        = data.template_cloudinit_config.ec2_instance.rendered
+  key_name                = each.value.key_name != "" ? each.value.key_name : var.key_name
+  monitoring              = false
+  user_data_base64        = data.cloudinit_config.ec2_instance.rendered
+
+  metadata_options {
+    http_endpoint          = "enabled"
+    http_tokens            = "required"
+    instance_metadata_tags = "enabled"
+  }
+
   credit_specification {
     cpu_credits = "unlimited"
   }
+
   root_block_device {
     delete_on_termination = true
     encrypted             = false
@@ -21,16 +26,29 @@ resource "aws_instance" "this" {
     volume_type           = var.volume_type
     tags = merge(
       {
-        "Name" = "${var.resource_name_prefix}-${each.key}"
+        Name = "${local.resource_name_prefix}-${each.key}"
       },
       each.value.tags
     )
   }
+
+  network_interface {
+    device_index         = 0
+    network_interface_id = aws_network_interface.ec2_instance[each.key].id
+  }
+
   tags = merge(
     {
-      "Name"        = "${var.resource_name_prefix}-${each.key}"
-      "zone_domain" = "${var.zone_domain}"
+      Name       = "${local.resource_name_prefix}-${each.key}"
+      ZoneDomain = "${var.zone_domain}"
     },
     each.value.tags
   )
+
+  depends_on = [
+    module.vpc,
+    aws_eip.ec2_instance,
+    aws_eip_association.ec2_instance,
+    aws_network_interface.ec2_instance,
+  ]
 }

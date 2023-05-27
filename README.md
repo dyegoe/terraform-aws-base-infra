@@ -1,30 +1,37 @@
-<!-- BEGIN_TF_DOCS -->
 # Terraform AWS Base Infra
 
 This module itends to deploy some base infrasctructure to AWS.
+
+It creates:
+
+- VPC with public subnets (IPv4 only)
+- Security Group with SSH access
+- EIPs
+- Network interfaces
+- EC2 instances
+- Route53 records
 
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| terraform | ~> 1.2.3 |
-| aws | ~> 4.9.0 |
-| random | ~>3.1.3 |
-| template | ~> 2.2.0 |
+| terraform | ~> 1.4.0 |
+| aws | ~> 5.0.1 |
+| cloudinit | ~> 2.3.2 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| aws | ~> 4.9.0 |
-| template | ~> 2.2.0 |
+| aws | 5.0.1 |
+| cloudinit | 2.3.2 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| security\_group | terraform-aws-modules/security-group/aws | ~> 4.9.0 |
-| vpc | terraform-aws-modules/vpc/aws | ~> 3.14.0 |
+| security\_group | terraform-aws-modules/security-group/aws | ~> 4.17.2 |
+| vpc | terraform-aws-modules/vpc/aws | ~> 4.0.2 |
 
 ## Resources
 
@@ -32,32 +39,26 @@ This module itends to deploy some base infrasctructure to AWS.
 |------|------|
 | [aws_ebs_volume.create](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ebs_volume) | resource |
 | [aws_ebs_volume.create_prevent_destroy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ebs_volume) | resource |
-| [aws_eip.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip) | resource |
-| [aws_eip_association.eip_assoc](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip_association) | resource |
-| [aws_iam_instance_profile.ec2_assume_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) | resource |
-| [aws_iam_policy.ec2_assume_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
-| [aws_iam_role.ec2_assume_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
-| [aws_iam_role_policy_attachment.ec2_assume_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_eip.ec2_instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip) | resource |
+| [aws_eip_association.ec2_instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip_association) | resource |
 | [aws_instance.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) | resource |
-| [aws_route53_record.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
+| [aws_network_interface.ec2_instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/network_interface) | resource |
+| [aws_route53_record.ec2_instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_volume_attachment.attach](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/volume_attachment) | resource |
 | [aws_volume_attachment.create](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/volume_attachment) | resource |
+| [aws_volume_attachment.create_prevent_destroy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/volume_attachment) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| availability\_zones | A list of availability zones | `list(string)` | ```[ "us-east-1a", "us-east-1b", "us-east-1c" ]``` | no |
-| cloud\_init\_public\_key | Public key to add to the instances using cloud-init. | `string` | n/a | yes |
-| cloud\_init\_user | User to add to the instances using cloud-init. | `string` | `"ansible"` | no |
-| instances | Map of objects to describe instances. | ```map(object({ ami_id = string instance_type = string disk_size = number additional_disks = map(object({ # Let it empty if there aren't any additional disks size = number mount_point = string volume_id = string prevent_destroy = bool })) tags = map(string) availability_zone = string ingress_sg_rules = list(object({ # Let it empty if there aren't ingress rules from_port = number to_port = number protocol = string description = string cidr_blocks = list(string) })) }))``` | n/a | yes |
+| ingress\_sg\_rules | A list of objects to describe ingress rules for the security group. The rules are applied to all instances. The rules are merged with the default rules. | ```list(object({ from_port = number to_port = number protocol = string description = string cidr_blocks = list(string) }))``` | `[]` | no |
+| instances | Map of objects to describe instances. Map keys is used as a name for the instance and must be unique. The project name will be used as a prefix for the instance name. | ```map(object({ ami_id = string instance_type = string key_name = optional(string, "") availability_zone = string disk_size = number additional_disks = optional( map( object({ size = number mount_point = string volume_id = optional(string, "") prevent_destroy = optional(bool, false) }) ), {}) ingress_sg_rules = optional( list( object({ from_port = number to_port = number protocol = string description = string cidr_blocks = list(string) }) ), []) tags = map(string) }))``` | n/a | yes |
 | key\_name | Pre-existent key name created on the same region and AWS account that you are creating the resources. It should match `availabilty` zones. | `string` | n/a | yes |
-| resource\_name\_prefix | Specify a name prefix for the resources | `string` | `"example-dev"` | no |
-| ssh\_port | SSH port number for the default SSH security group rule. | `number` | `22` | no |
-| ssh\_port\_cidr\_blocks | CIDR blocks to allow SSH access. | `list(string)` | ```[ "0.0.0.0/0" ]``` | no |
-| volume\_type | EBS Volume Type. | `string` | `"gp2"` | no |
-| vpc\_cidr | VPC CIDR | `string` | `"10.250.0.0/26"` | no |
-| vpc\_cidr\_subnets\_public | List of public subnets' CIDR | `list(string)` | ```[ "10.250.0.0/28", "10.250.0.16/28", "10.250.0.32/28" ]``` | no |
+| project | Project name. It will be used as a prefix for all resources. | `string` | n/a | yes |
+| ssh | SSH configuration. | ```object({ port = number allow_cidr_blocks = list(string) })``` | ```{ "allow_cidr_blocks": [ "0.0.0.0/0" ], "port": 22 }``` | no |
+| volume\_type | EBS Volume Type. | `string` | `"gp3"` | no |
+| vpc | A object containing VPC information. AZs must be a letter that represents the AZ. For example: ["a", "b", "c"]. Number of private/public subnets must match the number of availability zones. Tags are applied to all resources for the VPC. | ```object({ cidr = string azs = list(string) public_subnets = list(string) public_subnet_tags = optional(map(string), {}) tags = optional(map(string), {}) })``` | n/a | yes |
 | zone\_domain | A already hosted Route53 domain under the same AWS account that you are creating the resource. | `string` | n/a | yes |
 
 ## Outputs
@@ -65,5 +66,4 @@ This module itends to deploy some base infrasctructure to AWS.
 | Name | Description |
 |------|-------------|
 | instances | It returns an object of all instances created by the module. |
-
-<!-- END_TF_DOCS -->
+| ssh | n/a |

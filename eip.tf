@@ -1,13 +1,26 @@
-##### Create an Elastic IP #####
-resource "aws_eip" "this" {
+resource "aws_eip" "ec2_instance" {
   for_each = var.instances
-  vpc      = true
-  tags     = { "Name" = "${var.resource_name_prefix}-${each.key}" }
+
+  tags = merge(
+    {
+      Name     = "${local.resource_name_prefix}-${each.key}"
+      Instance = each.key
+    },
+    each.value.tags
+  )
+
+  depends_on = [module.vpc]
 }
 
-##### Associate it to the instance #####
-resource "aws_eip_association" "eip_assoc" {
-  for_each      = var.instances
-  instance_id   = aws_instance.this[each.key].id
-  allocation_id = aws_eip.this[each.key].id
+resource "aws_eip_association" "ec2_instance" {
+  for_each = var.instances
+
+  network_interface_id = aws_network_interface.ec2_instance[each.key].id
+  allocation_id        = aws_eip.ec2_instance[each.key].id
+
+  depends_on = [
+    module.vpc,
+    aws_eip.ec2_instance,
+    aws_network_interface.ec2_instance,
+  ]
 }
