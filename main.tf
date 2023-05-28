@@ -24,10 +24,9 @@ locals {
   }
   instances_ingress_sg_rules_merged = {
     for instance, i in var.instances :
-    instance => i.add_default_ingress_sg_rules == false ? i.ingress_sg_rules : merge(
-      var.default_ingress_sg_rules,
-      i.ingress_sg_rules,
-      { ssh = { from_port = var.ssh.port, to_port = var.ssh.port, ip_protocol = "tcp", cidr_ipv4 = var.ssh.allowed_cidr_blocks, description = "SSH Port - Default rules" } }
+    instance => merge(
+      i.add_default_ingress_sg_rules == false ? i.ingress_sg_rules : merge(var.default_ingress_sg_rules, i.ingress_sg_rules),
+      { default_ssh = { from_port = var.ssh.port, to_port = var.ssh.port, ip_protocol = "tcp", cidr_ipv4 = var.ssh.allowed_cidr_blocks, description = "SSH Port - Default rules" } }
     )
   }
   ##### Temporary transformation of egress sg rules

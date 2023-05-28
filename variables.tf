@@ -92,7 +92,7 @@ It could be included to the instances security group if `add_default_egress_sg_r
     })
   )
   default = {
-    any_to_any = { from_port = 0, to_port = 0, ip_protocol = "-1", cidr_ipv4 = ["0.0.0.0/0"], description = "Any to Any" }
+    default_any_to_any = { from_port = -1, to_port = -1, ip_protocol = "-1", cidr_ipv4 = ["0.0.0.0/0"], description = "Any to Any" }
   }
 }
 
