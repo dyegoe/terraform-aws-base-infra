@@ -17,26 +17,80 @@
 locals {
   resource_name_prefix = var.project
   azs                  = formatlist("${data.aws_region.current.name}%s", var.vpc.azs)
-  ##### Transform ingress rules cidr to string. It is needed by the security group module
-  ingress_sg_rules = [
-    for _, rule in var.ingress_sg_rules : {
+  ##### Merge default sg rules with instance sg rules
+  instances_egress_sg_rules_merged = {
+    for instance, i in var.instances :
+    instance => i.add_default_egress_sg_rules == false ? i.egress_sg_rules : merge(var.default_egress_sg_rules, i.egress_sg_rules)
+  }
+  instances_ingress_sg_rules_merged = {
+    for instance, i in var.instances :
+    instance => i.add_default_ingress_sg_rules == false ? i.ingress_sg_rules : merge(
+      var.default_ingress_sg_rules,
+      i.ingress_sg_rules,
+      { ssh = { from_port = var.ssh.port, to_port = var.ssh.port, ip_protocol = "tcp", cidr_ipv4 = var.ssh.allowed_cidr_blocks, description = "SSH Port - Default rules" } }
+    )
+  }
+  ##### Temporary transformation of egress sg rules
+  instances_egress_sg_rules_tmp = [
+    for instance, i in var.instances : [
+      for rule, r in local.instances_egress_sg_rules_merged[instance] : [
+        for c, cidr_ipv4 in r.cidr_ipv4 : {
+          name        = "${instance}_${rule}_${c}"
+          instance    = instance
+          rule        = rule
+          cidr_index  = c
+          from_port   = r.from_port
+          to_port     = r.to_port
+          ip_protocol = r.ip_protocol
+          cidr_ipv4   = cidr_ipv4
+          description = r.description
+        }
+      ]
+    ]
+  ]
+  #### Create a map of egress sg rules
+  instances_egress_sg_rules = {
+    for _, rule in flatten(local.instances_egress_sg_rules_tmp) : rule.name => {
+      instance    = rule.instance
+      rule        = rule.rule
+      cidr_index  = rule.cidr_index
       from_port   = rule.from_port
       to_port     = rule.to_port
-      protocol    = rule.protocol
+      ip_protocol = rule.ip_protocol
+      cidr_ipv4   = rule.cidr_ipv4
       description = rule.description
-      cidr_blocks = join(",", rule.cidr_blocks)
     }
-  ]
-  ingress_sg_rules_instances = {
-    for instance, v in var.instances : instance => [
-      for _, rule in v.ingress_sg_rules : {
-        from_port   = rule.from_port
-        to_port     = rule.to_port
-        protocol    = rule.protocol
-        description = rule.description
-        cidr_blocks = join(",", rule.cidr_blocks)
-      }
+  }
+  ##### Temporary transformation of ingress sg rules
+  instances_ingress_sg_rules_tmp = [
+    for instance, i in var.instances : [
+      for rule, r in local.instances_ingress_sg_rules_merged[instance] : [
+        for c, cidr_ipv4 in r.cidr_ipv4 : {
+          name        = "${instance}_${rule}_${c}"
+          instance    = instance
+          rule        = rule
+          cidr_index  = c
+          from_port   = r.from_port
+          to_port     = r.to_port
+          ip_protocol = r.ip_protocol
+          cidr_ipv4   = cidr_ipv4
+          description = r.description
+        }
+      ]
     ]
+  ]
+  #### Create a map of ingress sg rules
+  instances_ingress_sg_rules = {
+    for _, rule in flatten(local.instances_ingress_sg_rules_tmp) : rule.name => {
+      instance    = rule.instance
+      rule        = rule.rule
+      cidr_index  = rule.cidr_index
+      from_port   = rule.from_port
+      to_port     = rule.to_port
+      ip_protocol = rule.ip_protocol
+      description = rule.description
+      cidr_ipv4   = rule.cidr_ipv4
+    }
   }
   ##### Temporary transformation of additional disks
   additional_disks_tmp = flatten([

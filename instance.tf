@@ -26,7 +26,8 @@ resource "aws_instance" "this" {
     volume_type           = var.volume_type
     tags = merge(
       {
-        Name = "${local.resource_name_prefix}-${each.key}"
+        Name     = "${local.resource_name_prefix}-${each.key}"
+        Instance = each.key
       },
       each.value.tags
     )
@@ -40,6 +41,7 @@ resource "aws_instance" "this" {
   tags = merge(
     {
       Name       = "${local.resource_name_prefix}-${each.key}"
+      Instance   = each.key
       ZoneDomain = "${var.zone_domain}"
     },
     each.value.tags

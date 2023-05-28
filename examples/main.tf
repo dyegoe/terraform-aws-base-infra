@@ -7,14 +7,13 @@
 
 locals {
   region  = "eu-north-1"
-  project = "aws-base-infra"
+  project = "example-project"
   default_tags = {
     Owner       = "me"
     Environment = "dev"
     Terraform   = "true"
     Project     = local.project
   }
-  allowed_cidr_blocks = ["0.0.0.0/0"]
 }
 
 provider "aws" {
@@ -33,7 +32,7 @@ module "aws-base-infra" {
 
   project     = local.project
   key_name    = "default"
-  zone_domain = "aws.dyego.com.br"
+  zone_domain = "this-is-a-sample.com"
   volume_type = "gp3"
 
   vpc = {
@@ -47,55 +46,66 @@ module "aws-base-infra" {
   }
 
   ssh = {
-    port              = 22
-    allow_cidr_blocks = local.allowed_cidr_blocks
+    port                = 22
+    allowed_cidr_blocks = ["1.1.1.1/32"]
   }
 
-  ingress_sg_rules = [
-    { from_port = 443, to_port = 443, protocol = "tcp", description = "HTTPS Port", cidr_blocks = local.allowed_cidr_blocks }
-  ]
+  default_egress_sg_rules = {
+    all_from_allowed = { from_port = -1, to_port = -1, ip_protocol = "-1", cidr_ipv4 = ["2.2.2.2/32"], description = "All traffic from allowed cidr - Default rules" }
+  }
+  default_ingress_sg_rules = {
+    http = { from_port = 80, to_port = 80, ip_protocol = "tcp", cidr_ipv4 = ["3.3.3.3/32"], description = "HTTP Por - Default rules" }
+  }
 
   instances = {
-    master = {
+    sample-master01 = {
       ami_id            = data.aws_ssm_parameter.ami_id.value
       instance_type     = "t3.nano"
+      key_name          = "default"
       availability_zone = "a"
       disk_size         = 8
       additional_disks = {
-        "sdb" = {
+        sdb = {
           size        = 1
           mount_point = "/data"
         }
       }
-      ingress_sg_rules = [
-        { from_port = 80, to_port = 80, protocol = "tcp", description = "HTTP Port", cidr_blocks = local.allowed_cidr_blocks }
-      ]
+      add_default_egress_sg_rules  = false
+      add_default_ingress_sg_rules = false
+      egress_sg_rules = {
+        any-to-any = { from_port = -1, to_port = -1, ip_protocol = "-1", cidr_ipv4 = ["4.4.4.4/32"], description = "Any to Any", }
+      }
+      ingress_sg_rules = {
+        http = { from_port = 80, to_port = 80, ip_protocol = "tcp", cidr_ipv4 = ["5.5.5.5/32"], description = "HTTP Port" }
+      }
       tags = {
         Additional = "Tag"
       }
     }
-    node1 = {
-      ami_id            = "ubuntu2204"
+    sample-node0001 = {
+      ami_id            = "al2023"
       instance_type     = "t3.nano"
+      key_name          = "default"
       availability_zone = "a"
       disk_size         = 8
       additional_disks = {
-        "sdb" = {
+        sdb = {
           size            = 1
           mount_point     = "/data"
           prevent_destroy = true
         }
-        "sdd" = {
-          size        = 1
-          mount_point = "/srv"
-          volume_id   = "vol-0c3eb3655dd853f3c"
-        }
+        # sdd = {
+        #   size        = 1
+        #   mount_point = "/srv"
+        #   volume_id   = "vol-0c3eb3655dd853f3c"
+        # }
       }
-      ingress_sg_rules = [
-        { from_port = 80, to_port = 80, protocol = "tcp", description = "HTTP Port", cidr_blocks = local.allowed_cidr_blocks }
-      ]
+      add_default_egress_sg_rules  = true
+      add_default_ingress_sg_rules = true
+      egress_sg_rules              = {}
+      ingress_sg_rules             = {}
       tags = {
-        Additional = "Tag"
+        Additional2 = "Tag2"
       }
     }
   }
@@ -107,4 +117,12 @@ output "ssh" {
 
 output "instances" {
   value = module.aws-base-infra.instances
+}
+
+output "egress_sg_rules" {
+  value = module.aws-base-infra.egress_sg_rules
+}
+
+output "ingress_sg_rules" {
+  value = module.aws-base-infra.ingress_sg_rules
 }
