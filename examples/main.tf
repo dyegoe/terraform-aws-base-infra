@@ -94,6 +94,7 @@ module "aws-base-infra" {
           mount_point     = "/data"
           prevent_destroy = true
         }
+        # This an example how to add an existing volume to the instance
         # sdd = {
         #   size        = 1
         #   mount_point = "/srv"
