@@ -31,8 +31,8 @@ module "aws-base-infra" {
   source = "../"
 
   project     = local.project
-  key_name    = "default"
-  zone_domain = "this-is-a-sample.com"
+  key_name    = "default"              # This is a sample key, you should change it to your own key. It must be a key already created in AWS
+  zone_domain = "this-is-a-sample.com" # This is a sample domain, you should change it to your own domain. It must be a domain hosted in Route53
   volume_type = "gp3"
 
   vpc = {
@@ -59,10 +59,10 @@ module "aws-base-infra" {
 
   instances = {
     sample-master01 = {
-      ami_id            = data.aws_ssm_parameter.ami_id.value
+      ami_id            = data.aws_ssm_parameter.ami_id.value # This is an example how to use a SSM parameter to get the AMI ID
       instance_type     = "t3.nano"
-      key_name          = "default"
-      availability_zone = "a"
+      key_name          = "default" # This is a sample key, you should change it to your own key. It must be a key already created in AWS
+      availability_zone = "a"       # The availability zone must be a letter (a, b, c, ...)
       disk_size         = 8
       additional_disks = {
         sdb = {
@@ -83,16 +83,16 @@ module "aws-base-infra" {
       }
     }
     sample-node0001 = {
-      ami_id            = "al2023"
+      ami_id            = "al2023" # This is an example how to use a pre-defined AMI name
       instance_type     = "t3.nano"
-      key_name          = "default"
-      availability_zone = "a"
+      key_name          = "default" # This is a sample key, you should change it to your own key. It must be a key already created in AWS
+      availability_zone = "a"       # The availability zone must be a letter (a, b, c, ...)
       disk_size         = 8
       additional_disks = {
         sdb = {
-          size            = 1
-          mount_point     = "/data"
-          prevent_destroy = true
+          size        = 1
+          mount_point = "/data"
+          # prevent_destroy = true # This is an example how to prevent the volume to be destroyed
         }
         # This an example how to add an existing volume to the instance
         # sdd = {
@@ -101,12 +101,12 @@ module "aws-base-infra" {
         #   volume_id   = "vol-0c3eb3655dd853f3c"
         # }
       }
-      add_default_egress_sg_rules  = true
-      add_default_ingress_sg_rules = true
+      add_default_egress_sg_rules  = true # This is an example how to add the default egress sg rules to the instance security group
+      add_default_ingress_sg_rules = true # This is an example how to add the default ingress sg rules to the instance security group
       egress_sg_rules              = {}
       ingress_sg_rules             = {}
       tags = {
-        Additional2 = "Tag2"
+        AnyAdditional = "Tag"
       }
     }
   }

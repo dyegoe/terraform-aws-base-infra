@@ -165,7 +165,7 @@ data "aws_ssm_parameter" "ubuntu2204" {
 }
 
 ##### Lookup for the subnet id to place the instance
-data "aws_subnet" "ec2_instance" {
+data "aws_subnet" "instance" {
   for_each = var.instances
 
   vpc_id            = module.vpc.vpc_id

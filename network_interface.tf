@@ -1,7 +1,7 @@
-resource "aws_network_interface" "ec2_instance" {
+resource "aws_network_interface" "instance" {
   for_each = var.instances
 
-  subnet_id       = data.aws_subnet.ec2_instance[each.key].id
+  subnet_id       = data.aws_subnet.instance[each.key].id
   security_groups = [aws_security_group.instance[each.key].id]
 
   tags = merge(
