@@ -5,4 +5,5 @@ TOKEN=`curl -s -X PUT "$URL/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds:
 INSTANCE=`curl -s -H "X-aws-ec2-metadata-token: $TOKEN" $URL/meta-data/tags/instance/Instance`
 PROJECT=`curl -s -H "X-aws-ec2-metadata-token: $TOKEN" $URL/meta-data/tags/instance/Project`
 DOMAIN=`curl -s -H "X-aws-ec2-metadata-token: $TOKEN" $URL/meta-data/tags/instance/ZoneDomain`
-hostnamectl set-hostname $INSTANCE.$PROJECT.$DOMAIN
+HOSTNAME=`curl -s -H "X-aws-ec2-metadata-token: $TOKEN" $URL/meta-data/tags/instance/Hostname`
+hostnamectl set-hostname $HOSTNAME

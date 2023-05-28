@@ -7,7 +7,7 @@ resource "aws_instance" "this" {
   instance_type           = each.value.instance_type
   key_name                = each.value.key_name != "" ? each.value.key_name : var.key_name
   monitoring              = false
-  user_data_base64        = data.cloudinit_config.ec2_instance.rendered
+  user_data_base64        = data.cloudinit_config.instance.rendered
 
   metadata_options {
     http_endpoint          = "enabled"
@@ -35,13 +35,14 @@ resource "aws_instance" "this" {
 
   network_interface {
     device_index         = 0
-    network_interface_id = aws_network_interface.ec2_instance[each.key].id
+    network_interface_id = aws_network_interface.instance[each.key].id
   }
 
   tags = merge(
     {
       Name       = "${local.resource_name_prefix}-${each.key}"
       Instance   = each.key
+      Hostname   = "${each.key}.${local.resource_name_prefix}.${var.zone_domain}"
       ZoneDomain = "${var.zone_domain}"
     },
     each.value.tags
@@ -49,8 +50,8 @@ resource "aws_instance" "this" {
 
   depends_on = [
     module.vpc,
-    aws_eip.ec2_instance,
-    aws_eip_association.ec2_instance,
-    aws_network_interface.ec2_instance,
+    aws_eip.instance,
+    aws_eip_association.instance,
+    aws_network_interface.instance,
   ]
 }

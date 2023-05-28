@@ -1,4 +1,4 @@
-data "cloudinit_config" "ec2_instance" {
+data "cloudinit_config" "instance" {
   gzip          = false
   base64_encode = true
 
