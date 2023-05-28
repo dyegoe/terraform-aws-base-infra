@@ -58,7 +58,7 @@ It creates:
 | project | Project name. It will be used as a prefix for all resources. | `string` | n/a | yes |
 | ssh | SSH configuration. | ```object({ port = number allow_cidr_blocks = list(string) })``` | ```{ "allow_cidr_blocks": [ "0.0.0.0/0" ], "port": 22 }``` | no |
 | volume\_type | EBS Volume Type. | `string` | `"gp3"` | no |
-| vpc | A object containing VPC information. AZs must be a letter that represents the AZ. For example: ["a", "b", "c"]. Number of private/public subnets must match the number of availability zones. Tags are applied to all resources for the VPC. | ```object({ cidr = string azs = list(string) public_subnets = list(string) public_subnet_tags = optional(map(string), {}) tags = optional(map(string), {}) })``` | n/a | yes |
+| vpc | A object containing VPC information. AZs must be a letter that represents the AZ. For example: ["a", "b", "c"]. Number of public subnets must match the number of availability zones. Tags are applied to all resources for the VPC. | ```object({ cidr = string azs = list(string) public_subnets = list(string) public_subnet_tags = optional(map(string), {}) tags = optional(map(string), {}) })``` | n/a | yes |
 | zone\_domain | A already hosted Route53 domain under the same AWS account that you are creating the resource. | `string` | n/a | yes |
 
 ## Outputs

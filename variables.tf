@@ -30,7 +30,7 @@ variable "volume_type" {
 
 ##### VPC
 variable "vpc" {
-  description = "A object containing VPC information. AZs must be a letter that represents the AZ. For example: [\"a\", \"b\", \"c\"]. Number of private/public subnets must match the number of availability zones. Tags are applied to all resources for the VPC."
+  description = "A object containing VPC information. AZs must be a letter that represents the AZ. For example: [\"a\", \"b\", \"c\"]. Number of public subnets must match the number of availability zones. Tags are applied to all resources for the VPC."
   type = object({
     cidr               = string
     azs                = list(string)
