@@ -104,7 +104,7 @@ variable "instances" {
           cidr_blocks = list(string)
         })
     ), [])
-    tags = map(string)
+    tags = optional(map(string), {})
   }))
 
   validation {
