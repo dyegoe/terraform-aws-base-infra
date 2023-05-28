@@ -1,7 +1,7 @@
 resource "aws_instance" "this" {
   for_each = var.instances
 
-  ami                     = each.value.ami_id
+  ami                     = try(local.ami_ids[each.value.ami_id], each.value.ami_id)
   disable_api_termination = false
   ebs_optimized           = true
   instance_type           = each.value.instance_type
