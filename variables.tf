@@ -4,14 +4,21 @@ variable "project" {
   type        = string
 
   validation {
-    condition     = alltrue([var.project != null, var.project != ""])
-    error_message = "The project name must be a non-empty string."
+    condition     = can(regex("^[a-z](?:[a-z0-9-]{0,13}[a-z0-9])?$", var.project))
+    error_message = <<EOT
+The project name must be a lowercase string with hyphens, numbers or letters.
+It must start with a letter and end with a letter or number.
+It must be between 1 and 15 characters long.
+  EOT
   }
 }
 
 ##### Key Name
 variable "key_name" {
-  description = "Pre-existent key name created on the same region and AWS account that you are creating the resources. It should match `availabilty` zones."
+  description = <<EOT
+Pre-existent key name created on the same region and AWS account that you are creating the resources.
+It should match `availabilty` zones.
+  EOT
   type        = string
 }
 
@@ -30,7 +37,13 @@ variable "volume_type" {
 
 ##### VPC
 variable "vpc" {
-  description = "A object containing VPC information. AZs must be a letter that represents the AZ. For example: [\"a\", \"b\", \"c\"]. Number of private/public subnets must match the number of availability zones. Tags are applied to all resources for the VPC."
+  description = <<EOT
+A object containing VPC information.
+AZs must be a letter that represents the AZ.
+For example: [\"a\", \"b\", \"c\"].
+Number of public subnets must match the number of availability zones.
+Tags are applied to all resources for the VPC.
+  EOT
   type = object({
     cidr               = string
     azs                = list(string)
@@ -54,31 +67,62 @@ variable "vpc" {
 variable "ssh" {
   description = "SSH configuration."
   type = object({
-    port              = number
-    allow_cidr_blocks = list(string)
+    port                = number
+    allowed_cidr_blocks = list(string)
   })
   default = {
-    port              = 22
-    allow_cidr_blocks = ["0.0.0.0/0"]
+    port                = 22
+    allowed_cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
 ##### Security Group Rules
-variable "ingress_sg_rules" {
-  description = "A list of objects to describe ingress rules for the security group. The rules are applied to all instances. The rules are merged with the default rules."
-  type = list(object({
-    from_port   = number
-    to_port     = number
-    protocol    = string
-    description = string
-    cidr_blocks = list(string)
-  }))
-  default = []
+variable "default_egress_sg_rules" {
+  description = <<EOT
+Default security group egress rules.
+It could be included to the instances security group if `add_default_egress_sg_rules` is set to true."
+  EOT
+  type = map(
+    object({
+      from_port   = number
+      to_port     = number
+      ip_protocol = string
+      cidr_ipv4   = list(string)
+      description = string
+    })
+  )
+  default = {
+    any_to_any = { from_port = 0, to_port = 0, ip_protocol = "-1", cidr_ipv4 = ["0.0.0.0/0"], description = "Any to Any" }
+  }
+}
+
+variable "default_ingress_sg_rules" {
+  description = <<EOT
+  Default security group ingress rules.
+  It could be included to the instances security group if `add_default_ingress_sg_rules` is set to true.
+  EOT
+  type = map(
+    object({
+      from_port   = number
+      to_port     = number
+      ip_protocol = string
+      cidr_ipv4   = list(string)
+      description = string
+    })
+  )
+  default = {}
 }
 
 ##### Instances
 variable "instances" {
-  description = "Map of objects to describe instances. The Map key is used as a name for the instance and must be unique. The project name will be used as a prefix for the instance name. The `ami_id` accepts some pre-defined AMI names: amzn2, al2023, ubuntu2204. The pre-defined AMI will always get the latest AMI ID for the selected region."
+  description = <<EOT
+  Map of objects to describe instances.
+  Map key is used as a name for the instance and must be unique.
+  Project name will be used as a prefix for the instance name.
+  The `ami_id` accepts some pre-defined AMI names: `amzn2`, `al2023`, `ubuntu2204`.
+  The pre-defined AMI will always get the latest AMI ID for the selected region."
+  To add the default sg rules to the instance security group, set `add_default_egress_sg_rules` and/or `add_default_ingress_sg_rules` to `true`.
+  EOT
   type = map(object({
     ami_id            = string
     instance_type     = string
@@ -94,27 +138,47 @@ variable "instances" {
           prevent_destroy = optional(bool, false)
         })
     ), {})
-    ingress_sg_rules = optional(
-      list(
+    add_default_egress_sg_rules  = optional(bool, true)
+    add_default_ingress_sg_rules = optional(bool, false)
+    egress_sg_rules = optional(
+      map(
         object({
           from_port   = number
           to_port     = number
-          protocol    = string
+          ip_protocol = string
+          cidr_ipv4   = list(string)
           description = string
-          cidr_blocks = list(string)
         })
-    ), [])
+    ), {})
+    ingress_sg_rules = optional(
+      map(
+        object({
+          from_port   = number
+          to_port     = number
+          ip_protocol = string
+          cidr_ipv4   = list(string)
+          description = string
+        })
+    ), {})
     tags = optional(map(string), {})
   }))
 
   validation {
     condition     = alltrue([for instance, i in var.instances : can(regex("^(amzn2|al2023|ubuntu2204|ami-[a-z0-9]+)$", i.ami_id))])
-    error_message = "The AMI ID must be a pre-defined AMI name or a valid AMI ID. Pre-defined AMI names: amzn2, al2023, ubuntu2204. Example of valid AMI ID: ami-0a887e401f7654935"
+    error_message = <<EOT
+The AMI ID must be a pre-defined AMI name or a valid AMI ID.
+Pre-defined AMI names: amzn2, al2023, ubuntu2204.
+Example of valid AMI ID: ami-0a887e401f7654935"
+    EOT
   }
 
   validation {
-    condition     = alltrue([for instance, _ in var.instances : can(regex("^[a-z](?:[a-z0-9-]{0,30}[a-z0-9])?$", instance))])
-    error_message = "The instance name must be a lowercase string with hyphens, numbers or letters. It must start with a letter and end with a letter or number."
+    condition     = alltrue([for instance, _ in var.instances : can(regex("^[a-z](?:[a-z0-9-]{0,13}[a-z0-9])?$", instance))])
+    error_message = <<EOT
+The instance name must be a lowercase string with hyphens, numbers or letters.
+It must start with a letter and end with a letter or number.
+It must be between 1 and 15 characters long.
+    EOT
   }
 
   validation {

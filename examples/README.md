@@ -31,5 +31,7 @@ No inputs.
 
 | Name | Description |
 |------|-------------|
+| egress\_sg\_rules | n/a |
+| ingress\_sg\_rules | n/a |
 | instances | n/a |
 | ssh | n/a |

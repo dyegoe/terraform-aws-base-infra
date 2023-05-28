@@ -1,6 +1,7 @@
-##### Create volumes prevent destroy #####
+##### Create volumes prevent destroy
 resource "aws_ebs_volume" "create_prevent_destroy" {
-  for_each          = local.additional_disks_to_create_prevent_destroy
+  for_each = local.additional_disks_to_create_prevent_destroy
+
   availability_zone = each.value.availability_zone
   size              = each.value.size
   type              = var.volume_type
@@ -18,7 +19,7 @@ resource "aws_ebs_volume" "create_prevent_destroy" {
   }
 }
 
-#### Attach created volumes (prevent destroy) to the instance #####
+#### Attach created volumes (prevent destroy) to the instance
 resource "aws_volume_attachment" "create_prevent_destroy" {
   for_each = local.additional_disks_to_create_prevent_destroy
 
@@ -33,7 +34,7 @@ resource "aws_volume_attachment" "create_prevent_destroy" {
   ]
 }
 
-##### Create volumes #####
+##### Create volumes
 resource "aws_ebs_volume" "create" {
   for_each = local.additional_disks_to_create
 
@@ -55,7 +56,7 @@ resource "aws_ebs_volume" "create" {
   }
 }
 
-#### Attach created volumes to the instance #####
+#### Attach created volumes to the instance
 resource "aws_volume_attachment" "create" {
   for_each = local.additional_disks_to_create
 
@@ -70,7 +71,7 @@ resource "aws_volume_attachment" "create" {
   ]
 }
 
-#### Attach volumes to the instances #####
+#### Attach volumes to the instances
 resource "aws_volume_attachment" "attach" {
   for_each = local.additional_disks_to_attach
 
@@ -79,7 +80,5 @@ resource "aws_volume_attachment" "attach" {
   instance_id                    = aws_instance.this[each.value.instance].id
   stop_instance_before_detaching = true
 
-  depends_on = [
-    aws_instance.this,
-  ]
+  depends_on = [aws_instance.this]
 }

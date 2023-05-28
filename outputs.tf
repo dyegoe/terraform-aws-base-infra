@@ -1,8 +1,8 @@
 output "ssh" {
   description = "It returns an object of SSH connection details."
   value = {
-    port              = var.ssh.port
-    allow_cidr_blocks = var.ssh.allow_cidr_blocks
+    port                = var.ssh.port
+    allowed_cidr_blocks = var.ssh.allowed_cidr_blocks
   }
 }
 
@@ -17,8 +17,9 @@ output "instances" {
       private_ip          = aws_instance.this[instance].private_ip
       public_ip           = aws_eip.ec2_instance[instance].public_ip
       route53             = aws_route53_record.ec2_instance[instance].name
-      security_group_id   = module.security_group[instance].security_group_id
-      security_group_name = module.security_group[instance].security_group_name
+      random_id_sg        = random_id.instance_sg[instance].hex
+      security_group_id   = aws_security_group.instance[instance].id
+      security_group_name = aws_security_group.instance[instance].name
       subnet_id           = data.aws_subnet.ec2_instance[instance].id
       tags                = aws_instance.this[instance].tags
       additional_disks = {
@@ -29,4 +30,14 @@ output "instances" {
       }
     }
   }
+}
+
+output "egress_sg_rules" {
+  description = "It returns an object of egress security group rules."
+  value       = local.instances_egress_sg_rules
+}
+
+output "ingress_sg_rules" {
+  description = "It returns an object of ingress security group rules."
+  value       = local.instances_ingress_sg_rules
 }
