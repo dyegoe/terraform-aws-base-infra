@@ -75,7 +75,7 @@ module "aws-base-infra" {
       }
     }
     node1 = {
-      ami_id            = data.aws_ssm_parameter.ami_id.value
+      ami_id            = "ubuntu2204"
       instance_type     = "t3.nano"
       availability_zone = "a"
       disk_size         = 8

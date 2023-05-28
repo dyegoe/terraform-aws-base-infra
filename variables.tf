@@ -78,7 +78,7 @@ variable "ingress_sg_rules" {
 
 ##### Instances
 variable "instances" {
-  description = "Map of objects to describe instances. Map keys is used as a name for the instance and must be unique. The project name will be used as a prefix for the instance name."
+  description = "Map of objects to describe instances. The Map key is used as a name for the instance and must be unique. The project name will be used as a prefix for the instance name. The `ami_id` accepts some pre-defined AMI names: amzn2, al2023, ubuntu2204. The pre-defined AMI will always get the latest AMI ID for the selected region."
   type = map(object({
     ami_id            = string
     instance_type     = string
@@ -106,6 +106,11 @@ variable "instances" {
     ), [])
     tags = map(string)
   }))
+
+  validation {
+    condition     = alltrue([for instance, i in var.instances : can(regex("^(amzn2|al2023|ubuntu2204|ami-[a-z0-9]+)$", i.ami_id))])
+    error_message = "The AMI ID must be a pre-defined AMI name or a valid AMI ID. Pre-defined AMI names: amzn2, al2023, ubuntu2204. Example of valid AMI ID: ami-0a887e401f7654935"
+  }
 
   validation {
     condition     = alltrue([for instance, _ in var.instances : can(regex("^[a-z](?:[a-z0-9-]{0,30}[a-z0-9])?$", instance))])

@@ -82,6 +82,12 @@ locals {
       tags              = a.tags
     } if a.volume_id != ""
   }
+  ##### Pre-defined AMIs
+  ami_ids = {
+    amzn2      = data.aws_ssm_parameter.amzn2.value
+    al2023     = data.aws_ssm_parameter.al2023.value
+    ubuntu2204 = data.aws_ssm_parameter.ubuntu2204.value
+  }
 }
 
 data "aws_region" "current" {}
@@ -91,6 +97,19 @@ data "aws_caller_identity" "current" {}
 data "aws_default_tags" "current" {}
 
 data "aws_route53_zone" "current" { name = var.zone_domain }
+
+##### Pre-defined AMIs
+data "aws_ssm_parameter" "amzn2" {
+  name = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+}
+
+data "aws_ssm_parameter" "al2023" {
+  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+}
+
+data "aws_ssm_parameter" "ubuntu2204" {
+  name = "/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id"
+}
 
 ##### Lookup for the subnet id to place the instance
 data "aws_subnet" "ec2_instance" {
