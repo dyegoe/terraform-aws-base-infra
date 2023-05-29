@@ -21,7 +21,7 @@ output "instances" {
       security_group_id   = aws_security_group.instance[instance].id
       security_group_name = aws_security_group.instance[instance].name
       subnet_id           = data.aws_subnet.instance[instance].id
-      tags                = aws_instance.this[instance].tags
+      tags                = aws_instance.this[instance].tags_all
       additional_disks = {
         for disk, v in merge(aws_volume_attachment.create, aws_volume_attachment.create_prevent_destroy) : disk => {
           device_name = v.device_name
