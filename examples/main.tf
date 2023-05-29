@@ -47,14 +47,14 @@ module "aws-base-infra" {
 
   ssh = {
     port                = 22
-    allowed_cidr_blocks = ["1.1.1.1/32"]
+    allowed_cidr_blocks = ["0.0.0.0/0"]
   }
 
   default_egress_sg_rules = {
-    all_from_allowed = { from_port = -1, to_port = -1, ip_protocol = "-1", cidr_ipv4 = ["2.2.2.2/32"], description = "All traffic from allowed cidr - Default rules" }
+    all_from_allowed = { from_port = -1, to_port = -1, ip_protocol = "-1", cidr_ipv4 = ["0.0.0.0/0"], description = "All traffic from allowed cidr - Default rules" }
   }
   default_ingress_sg_rules = {
-    http = { from_port = 80, to_port = 80, ip_protocol = "tcp", cidr_ipv4 = ["3.3.3.3/32"], description = "HTTP Por - Default rules" }
+    http = { from_port = 80, to_port = 80, ip_protocol = "tcp", cidr_ipv4 = ["0.0.0.0/0"], description = "HTTP Por - Default rules" }
   }
 
   instances = {
@@ -73,10 +73,10 @@ module "aws-base-infra" {
       add_default_egress_sg_rules  = false
       add_default_ingress_sg_rules = false
       egress_sg_rules = {
-        any-to-any = { from_port = -1, to_port = -1, ip_protocol = "-1", cidr_ipv4 = ["4.4.4.4/32"], description = "Any to Any", }
+        any-to-any = { from_port = -1, to_port = -1, ip_protocol = "-1", cidr_ipv4 = ["0.0.0.0/0"], description = "Any to Any", }
       }
       ingress_sg_rules = {
-        http = { from_port = 80, to_port = 80, ip_protocol = "tcp", cidr_ipv4 = ["5.5.5.5/32"], description = "HTTP Port" }
+        https = { from_port = 443, to_port = 443, ip_protocol = "tcp", cidr_ipv4 = ["0.0.0.0/0"], description = "HTTPS Port" }
       }
       tags = {
         Additional = "Tag"
