@@ -40,10 +40,9 @@ resource "aws_instance" "this" {
 
   tags = merge(
     {
-      Name       = "${local.resource_name_prefix}-${each.key}"
-      Instance   = each.key
-      Hostname   = "${each.key}.${local.resource_name_prefix}.${var.zone_domain}"
-      ZoneDomain = "${var.zone_domain}"
+      Name     = "${local.resource_name_prefix}-${each.key}"
+      Instance = each.key
+      Hostname = "${each.key}.${local.zone_domain}"
     },
     each.value.tags
   )

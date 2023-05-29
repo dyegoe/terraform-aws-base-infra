@@ -16,7 +16,7 @@ output "instances" {
       type                = aws_instance.this[instance].instance_type
       private_ip          = aws_instance.this[instance].private_ip
       public_ip           = aws_eip.instance[instance].public_ip
-      route53             = aws_route53_record.instance[instance].name
+      route53             = aws_route53_record.public[instance].name
       random_id_sg        = random_id.instance_sg[instance].hex
       security_group_id   = aws_security_group.instance[instance].id
       security_group_name = aws_security_group.instance[instance].name

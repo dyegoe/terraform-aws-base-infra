@@ -17,6 +17,7 @@
 locals {
   resource_name_prefix = var.project
   azs                  = formatlist("${data.aws_region.current.name}%s", var.vpc.azs)
+  zone_domain          = "${local.resource_name_prefix}.${var.zone_domain}"
   ##### Merge default sg rules with instance sg rules
   instances_egress_sg_rules_merged = {
     for instance, i in var.instances :
