@@ -14,8 +14,38 @@ It creates:
 ## Usage
 
 ```hcl
-# TODO
+module "aws_base_infra" {
+  # source = "github.com/dyegoe/terraform-aws-base-infra?ref=main"
+
+  project     = "example-project"
+  key_name    = "default"
+  zone_domain = "example.com"
+
+  vpc = {
+    cidr = "10.0.0.0/24"
+    azs  = ["a", "b", "c"]
+    public_subnets = [
+      "10.0.0.0/26",
+      "10.0.0.64/26",
+      "10.0.0.128/26"
+    ]
+  }
+
+  default_ingress_sg_rules = {
+    internal = { from_port = -1, to_port = -1, ip_protocol = "-1", cidr_ipv4 = ["0.0.0.0/0"], description = "Allow any from anywhere" }
+  }
+
+  instances = {
+    sample-node0001 = {
+      ami_id            = "al2023"
+      instance_type     = "t3.nano"
+      availability_zone = "a"
+      disk_size         = 8
+    }
+  }
+}
 ```
+
 <!-- markdownlint-disable MD033 -->
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
