@@ -43,6 +43,7 @@ resource "aws_instance" "this" {
       Name     = "${local.resource_name_prefix}-${each.key}"
       Instance = each.key
       Hostname = "${each.key}.${local.zone_domain}"
+      Domain   = local.zone_domain
     },
     each.value.tags
   )

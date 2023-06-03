@@ -6,5 +6,7 @@ write_files:
     content: "preserve_hostname: true"
 
 runcmd:
-  - 'sed -i -E "s?^(#|)Port .*?Port ${ssh_port}?" /etc/ssh/sshd_config'
-  - "systemctl restart sshd"
+  - sed -i -E "s?^(#|)Port .*?Port ${ssh_port}?" /etc/ssh/sshd_config
+  - systemctl restart sshd
+  - setenforce 0
+  - sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
