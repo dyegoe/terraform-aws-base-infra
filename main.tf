@@ -1,19 +1,3 @@
-/*
- * # Terraform AWS Base Infra
- *
- * This module itends to deploy some base infrasctructure to AWS.
- *
- * It creates:
- *
- * - VPC with public subnets (IPv4 only)
- * - Security Group with SSH access
- * - EIPs
- * - Network interfaces
- * - EC2 instances
- * - Route53 records
- *
- */
-
 locals {
   resource_name_prefix = var.project
   azs                  = formatlist("${data.aws_region.current.name}%s", var.vpc.azs)
@@ -145,8 +129,6 @@ locals {
 }
 
 data "aws_region" "current" {}
-
-data "aws_caller_identity" "current" {}
 
 data "aws_default_tags" "current" {}
 

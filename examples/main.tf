@@ -1,19 +1,22 @@
-/*
- * # Terraform AWS Base Infra
- *
- * This is an example of how to use the module.
- *
- */
+terraform {
+  required_version = "~> 1.4.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0.1"
+    }
+  }
+}
 
 locals {
-  region  = "eu-north-1"
-  project = "example-project"
-  default_tags = {
-    Owner       = "me"
-    Environment = "dev"
-    Terraform   = "true"
-    Project     = local.project
-  }
+  project = var.project
+  region  = var.region
+  default_tags = merge(
+    {
+      Project = local.project
+    },
+    var.default_tags
+  )
 }
 
 provider "aws" {
@@ -27,7 +30,7 @@ data "aws_ssm_parameter" "ami_id" {
   name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
 }
 
-module "aws-base-infra" {
+module "aws_base_infra" {
   source = "../"
 
   project     = local.project
@@ -110,20 +113,4 @@ module "aws-base-infra" {
       }
     }
   }
-}
-
-output "ssh" {
-  value = module.aws-base-infra.ssh
-}
-
-output "instances" {
-  value = module.aws-base-infra.instances
-}
-
-output "egress_sg_rules" {
-  value = module.aws-base-infra.egress_sg_rules
-}
-
-output "ingress_sg_rules" {
-  value = module.aws-base-infra.ingress_sg_rules
 }
