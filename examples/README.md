@@ -4,7 +4,10 @@ This is an example of how to use the module.
 
 ## Requirements
 
-No requirements.
+| Name | Version |
+|------|---------|
+| terraform | ~> 1.4.0 |
+| aws | ~> 5.0.1 |
 
 ## Providers
 
@@ -16,7 +19,7 @@ No requirements.
 
 | Name | Source | Version |
 |------|--------|---------|
-| aws-base-infra | ../ | n/a |
+| aws\_base\_infra | ../ | n/a |
 
 ## Resources
 
@@ -25,13 +28,17 @@ No requirements.
 
 ## Inputs
 
-No inputs.
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| default\_tags | Default tags | `map(string)` | ```{ "Environment": "dev", "Owner": "me", "Terraform": "true" }``` | no |
+| project | Project name | `string` | `"example-project"` | no |
+| region | AWS region | `string` | `"eu-north-1"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| egress\_sg\_rules | n/a |
-| ingress\_sg\_rules | n/a |
-| instances | n/a |
-| ssh | n/a |
+| egress\_sg\_rules | Egress security group rules |
+| ingress\_sg\_rules | Ingress security group rules |
+| instances | Instances configuration |
+| ssh | SSH configuration |
