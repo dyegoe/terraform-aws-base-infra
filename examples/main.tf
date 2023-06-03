@@ -1,10 +1,3 @@
-/*
- * # Terraform AWS Base Infra
- *
- * This is an example of how to use the module.
- *
- */
-
 terraform {
   required_version = "~> 1.4.0"
   required_providers {

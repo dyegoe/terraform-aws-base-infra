@@ -1,4 +1,4 @@
-# Terraform AWS Base Infra
+# AWS Base Infra Terraform module
 
 This module itends to deploy some base infrasctructure to AWS.
 
@@ -11,28 +11,35 @@ It creates:
 - EC2 instances
 - Route53 records
 
+## Usage
+
+```hcl
+# TODO
+```
+<!-- markdownlint-disable MD033 -->
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| terraform | ~> 1.4.0 |
-| aws | ~> 5.0.1 |
-| cloudinit | ~> 2.3.2 |
-| random | ~> 3.5.1 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.4.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 5.0.1 |
+| <a name="requirement_cloudinit"></a> [cloudinit](#requirement\_cloudinit) | ~> 2.3.2 |
+| <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.5.1 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| aws | 5.0.1 |
-| cloudinit | 2.3.2 |
-| random | 3.5.1 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 5.0.1 |
+| <a name="provider_cloudinit"></a> [cloudinit](#provider\_cloudinit) | ~> 2.3.2 |
+| <a name="provider_random"></a> [random](#provider\_random) | ~> 3.5.1 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| vpc | terraform-aws-modules/vpc/aws | ~> 4.0.2 |
+| <a name="module_vpc"></a> [vpc](#module\_vpc) | terraform-aws-modules/vpc/aws | ~> 4.0.2 |
 
 ## Resources
 
@@ -54,26 +61,44 @@ It creates:
 | [aws_vpc_security_group_egress_rule.instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_egress_rule) | resource |
 | [aws_vpc_security_group_ingress_rule.instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_ingress_rule) | resource |
 | [random_id.instance_sg](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
+| [aws_default_tags.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/default_tags) | data source |
+| [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
+| [aws_route53_zone.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
+| [aws_ssm_parameter.al2023](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ssm_parameter) | data source |
+| [aws_ssm_parameter.amzn2](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ssm_parameter) | data source |
+| [aws_ssm_parameter.ubuntu2204](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ssm_parameter) | data source |
+| [aws_subnet.instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
+| [cloudinit_config.instance](https://registry.terraform.io/providers/hashicorp/cloudinit/latest/docs/data-sources/config) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| default\_egress\_sg\_rules | Default security group egress rules. It could be included to the instances security group if `add_default_egress_sg_rules` is set to true." | ```map( object({ from_port = number to_port = number ip_protocol = string cidr_ipv4 = list(string) description = string }) )``` | ```{ "default_any_to_any": { "cidr_ipv4": [ "0.0.0.0/0" ], "description": "Any to Any", "from_port": -1, "ip_protocol": "-1", "to_port": -1 } }``` | no |
-| default\_ingress\_sg\_rules | Default security group ingress rules.   It could be included to the instances security group if `add_default_ingress_sg_rules` is set to true. | ```map( object({ from_port = number to_port = number ip_protocol = string cidr_ipv4 = list(string) description = string }) )``` | `{}` | no |
-| instances | Map of objects to describe instances.   Map key is used as a name for the instance and must be unique.   Project name will be used as a prefix for the instance name.   The `ami_id` accepts some pre-defined AMI names: `amzn2`, `al2023`, `ubuntu2204`.   The pre-defined AMI will always get the latest AMI ID for the selected region."   To add the default sg rules to the instance security group, set `add_default_egress_sg_rules` and/or `add_default_ingress_sg_rules` to `true`. | ```map(object({ ami_id = string instance_type = string key_name = optional(string, "") availability_zone = string disk_size = number additional_disks = optional( map( object({ size = number mount_point = string volume_id = optional(string, "") prevent_destroy = optional(bool, false) }) ), {}) add_default_egress_sg_rules = optional(bool, true) add_default_ingress_sg_rules = optional(bool, false) egress_sg_rules = optional( map( object({ from_port = number to_port = number ip_protocol = string cidr_ipv4 = list(string) description = string }) ), {}) ingress_sg_rules = optional( map( object({ from_port = number to_port = number ip_protocol = string cidr_ipv4 = list(string) description = string }) ), {}) tags = optional(map(string), {}) }))``` | n/a | yes |
-| key\_name | Pre-existent key name created on the same region and AWS account that you are creating the resources. It should match `availabilty` zones. | `string` | n/a | yes |
-| project | Project name. It will be used as a prefix for all resources. | `string` | n/a | yes |
-| ssh | SSH configuration. | ```object({ port = number allowed_cidr_blocks = list(string) })``` | ```{ "allowed_cidr_blocks": [ "0.0.0.0/0" ], "port": 22 }``` | no |
-| volume\_type | EBS Volume Type. | `string` | `"gp3"` | no |
-| vpc | A object containing VPC information. AZs must be a letter that represents the AZ. For example: [\"a\", \"b\", \"c\"]. Number of public subnets must match the number of availability zones. Tags are applied to all resources for the VPC. | ```object({ cidr = string azs = list(string) public_subnets = list(string) public_subnet_tags = optional(map(string), {}) tags = optional(map(string), {}) })``` | n/a | yes |
-| zone\_domain | A already hosted Route53 domain under the same AWS account that you are creating the resource. | `string` | n/a | yes |
+| <a name="input_default_egress_sg_rules"></a> [default\_egress\_sg\_rules](#input\_default\_egress\_sg\_rules) | Default security group egress rules.<br>It could be included to the instances security group if `add_default_egress_sg_rules` is set to true." | <pre>map(<br>    object({<br>      from_port   = number<br>      to_port     = number<br>      ip_protocol = string<br>      cidr_ipv4   = list(string)<br>      description = string<br>    })<br>  )</pre> | <pre>{<br>  "default_any_to_any": {<br>    "cidr_ipv4": [<br>      "0.0.0.0/0"<br>    ],<br>    "description": "Any to Any",<br>    "from_port": -1,<br>    "ip_protocol": "-1",<br>    "to_port": -1<br>  }<br>}</pre> | no |
+| <a name="input_default_ingress_sg_rules"></a> [default\_ingress\_sg\_rules](#input\_default\_ingress\_sg\_rules) | Default security group ingress rules.<br>  It could be included to the instances security group if `add_default_ingress_sg_rules` is set to true. | <pre>map(<br>    object({<br>      from_port   = number<br>      to_port     = number<br>      ip_protocol = string<br>      cidr_ipv4   = list(string)<br>      description = string<br>    })<br>  )</pre> | `{}` | no |
+| <a name="input_instances"></a> [instances](#input\_instances) | Map of objects to describe instances.<br>  Map key is used as a name for the instance and must be unique.<br>  Project name will be used as a prefix for the instance name.<br>  The `ami_id` accepts some pre-defined AMI names: `amzn2`, `al2023`, `ubuntu2204`.<br>  The pre-defined AMI will always get the latest AMI ID for the selected region."<br>  To add the default sg rules to the instance security group, set `add_default_egress_sg_rules` and/or `add_default_ingress_sg_rules` to `true`. | <pre>map(object({<br>    ami_id            = string<br>    instance_type     = string<br>    key_name          = optional(string, "")<br>    availability_zone = string<br>    disk_size         = number<br>    additional_disks = optional(<br>      map(<br>        object({<br>          size            = number<br>          mount_point     = string<br>          volume_id       = optional(string, "")<br>          prevent_destroy = optional(bool, false)<br>        })<br>    ), {})<br>    add_default_egress_sg_rules  = optional(bool, true)<br>    add_default_ingress_sg_rules = optional(bool, false)<br>    egress_sg_rules = optional(<br>      map(<br>        object({<br>          from_port   = number<br>          to_port     = number<br>          ip_protocol = string<br>          cidr_ipv4   = list(string)<br>          description = string<br>        })<br>    ), {})<br>    ingress_sg_rules = optional(<br>      map(<br>        object({<br>          from_port   = number<br>          to_port     = number<br>          ip_protocol = string<br>          cidr_ipv4   = list(string)<br>          description = string<br>        })<br>    ), {})<br>    tags = optional(map(string), {})<br>  }))</pre> | n/a | yes |
+| <a name="input_key_name"></a> [key\_name](#input\_key\_name) | Pre-existent key name created on the same region and AWS account that you are creating the resources.<br>It should match `availabilty` zones. | `string` | n/a | yes |
+| <a name="input_project"></a> [project](#input\_project) | Project name. It will be used as a prefix for all resources. | `string` | n/a | yes |
+| <a name="input_ssh"></a> [ssh](#input\_ssh) | SSH configuration. | <pre>object({<br>    port                = number<br>    allowed_cidr_blocks = list(string)<br>  })</pre> | <pre>{<br>  "allowed_cidr_blocks": [<br>    "0.0.0.0/0"<br>  ],<br>  "port": 22<br>}</pre> | no |
+| <a name="input_volume_type"></a> [volume\_type](#input\_volume\_type) | EBS Volume Type. | `string` | `"gp3"` | no |
+| <a name="input_vpc"></a> [vpc](#input\_vpc) | A object containing VPC information.<br>AZs must be a letter that represents the AZ.<br>For example: [\"a\", \"b\", \"c\"].<br>Number of public subnets must match the number of availability zones.<br>Tags are applied to all resources for the VPC. | <pre>object({<br>    cidr               = string<br>    azs                = list(string)<br>    public_subnets     = list(string)<br>    public_subnet_tags = optional(map(string), {})<br>    tags               = optional(map(string), {})<br>  })</pre> | n/a | yes |
+| <a name="input_zone_domain"></a> [zone\_domain](#input\_zone\_domain) | A already hosted Route53 domain under the same AWS account that you are creating the resource. | `string` | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| egress\_sg\_rules | It returns an object of egress security group rules. |
-| ingress\_sg\_rules | It returns an object of ingress security group rules. |
-| instances | It returns an object of all instances created by the module. |
-| ssh | It returns an object of SSH connection details. |
+| <a name="output_egress_sg_rules"></a> [egress\_sg\_rules](#output\_egress\_sg\_rules) | It returns an object of egress security group rules. |
+| <a name="output_ingress_sg_rules"></a> [ingress\_sg\_rules](#output\_ingress\_sg\_rules) | It returns an object of ingress security group rules. |
+| <a name="output_instances"></a> [instances](#output\_instances) | It returns an object of all instances created by the module. |
+| <a name="output_ssh"></a> [ssh](#output\_ssh) | It returns an object of SSH connection details. |
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- markdownlint-enable MD033 -->
+
+## Authors
+
+Module is maintained by [Dyego Alexandre Eugenio](https://github.com/dyegoe)
+
+## License
+
+Apache 2 Licensed. See [LICENSE](https://github.com/dyegoe/terraform-aws-base-infra/tree/master/LICENSE) for full details.
