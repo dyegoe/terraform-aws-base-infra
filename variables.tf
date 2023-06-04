@@ -129,7 +129,7 @@ To add the default sg rules to the instance security group, set `add_default_egr
     instance_type     = string
     key_name          = optional(string, "")
     availability_zone = string
-    disk_size         = number
+    disk_size         = optional(number, 8)
     additional_disks = optional(
       map(
         object({

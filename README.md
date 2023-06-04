@@ -10,7 +10,8 @@ It creates:
 - [EIPs](#eips)
 - [Route53 records](#route53)
 - [EBS Volumes](#ebs-volumes)
-- EC2 instances
+- [EC2 instances](#ec2-instances)
+- [Cloud-init](#cloud-init)
 
 ## Usage
 
@@ -113,7 +114,7 @@ module "aws_base_infra" {
 |------|-------------|------|---------|:--------:|
 | <a name="input_default_egress_sg_rules"></a> [default\_egress\_sg\_rules](#input\_default\_egress\_sg\_rules) | Default security group egress rules.<br>It could be included to the instances security group if `add_default_egress_sg_rules` is set to true." | <pre>map(<br>    object({<br>      from_port   = number<br>      to_port     = number<br>      ip_protocol = string<br>      cidr_ipv4   = list(string)<br>      description = string<br>    })<br>  )</pre> | <pre>{<br>  "default_any_to_any": {<br>    "cidr_ipv4": [<br>      "0.0.0.0/0"<br>    ],<br>    "description": "Any to Any",<br>    "from_port": -1,<br>    "ip_protocol": "-1",<br>    "to_port": -1<br>  }<br>}</pre> | no |
 | <a name="input_default_ingress_sg_rules"></a> [default\_ingress\_sg\_rules](#input\_default\_ingress\_sg\_rules) | Default security group ingress rules.<br>It could be included to the instances security group if `add_default_ingress_sg_rules` is set to true. | <pre>map(<br>    object({<br>      from_port   = number<br>      to_port     = number<br>      ip_protocol = string<br>      cidr_ipv4   = list(string)<br>      description = string<br>    })<br>  )</pre> | `{}` | no |
-| <a name="input_instances"></a> [instances](#input\_instances) | Map of objects to describe instances.<br>Map key is used as a name for the instance and must be unique.<br>Project name will be used as a prefix for the instance name.<br>The `ami_id` accepts some pre-defined AMI names: `amzn2`, `al2023`, `ubuntu2204`.<br>The pre-defined AMI will always get the latest AMI ID for the selected region."<br>The `additional_disks` is a map of objects to describe additional disks to create/attach to the instance. The key must be a device name.<br>To add the default sg rules to the instance security group, set `add_default_egress_sg_rules` and/or `add_default_ingress_sg_rules` to `true`. | <pre>map(object({<br>    ami_id            = string<br>    instance_type     = string<br>    key_name          = optional(string, "")<br>    availability_zone = string<br>    disk_size         = number<br>    additional_disks = optional(<br>      map(<br>        object({<br>          size            = number<br>          mount_point     = string<br>          volume_id       = optional(string, "")<br>          prevent_destroy = optional(bool, false)<br>        })<br>    ), {})<br>    add_default_egress_sg_rules  = optional(bool, true)<br>    add_default_ingress_sg_rules = optional(bool, false)<br>    egress_sg_rules = optional(<br>      map(<br>        object({<br>          from_port   = number<br>          to_port     = number<br>          ip_protocol = string<br>          cidr_ipv4   = list(string)<br>          description = string<br>        })<br>    ), {})<br>    ingress_sg_rules = optional(<br>      map(<br>        object({<br>          from_port   = number<br>          to_port     = number<br>          ip_protocol = string<br>          cidr_ipv4   = list(string)<br>          description = string<br>        })<br>    ), {})<br>    tags = optional(map(string), {})<br>  }))</pre> | n/a | yes |
+| <a name="input_instances"></a> [instances](#input\_instances) | Map of objects to describe instances.<br>Map key is used as a name for the instance and must be unique.<br>Project name will be used as a prefix for the instance name.<br>The `ami_id` accepts some pre-defined AMI names: `amzn2`, `al2023`, `ubuntu2204`.<br>The pre-defined AMI will always get the latest AMI ID for the selected region."<br>The `additional_disks` is a map of objects to describe additional disks to create/attach to the instance. The key must be a device name.<br>To add the default sg rules to the instance security group, set `add_default_egress_sg_rules` and/or `add_default_ingress_sg_rules` to `true`. | <pre>map(object({<br>    ami_id            = string<br>    instance_type     = string<br>    key_name          = optional(string, "")<br>    availability_zone = string<br>    disk_size         = optional(number, 8)<br>    additional_disks = optional(<br>      map(<br>        object({<br>          size            = number<br>          mount_point     = string<br>          volume_id       = optional(string, "")<br>          prevent_destroy = optional(bool, false)<br>        })<br>    ), {})<br>    add_default_egress_sg_rules  = optional(bool, true)<br>    add_default_ingress_sg_rules = optional(bool, false)<br>    egress_sg_rules = optional(<br>      map(<br>        object({<br>          from_port   = number<br>          to_port     = number<br>          ip_protocol = string<br>          cidr_ipv4   = list(string)<br>          description = string<br>        })<br>    ), {})<br>    ingress_sg_rules = optional(<br>      map(<br>        object({<br>          from_port   = number<br>          to_port     = number<br>          ip_protocol = string<br>          cidr_ipv4   = list(string)<br>          description = string<br>        })<br>    ), {})<br>    tags = optional(map(string), {})<br>  }))</pre> | n/a | yes |
 | <a name="input_key_name"></a> [key\_name](#input\_key\_name) | Pre-existent key name created on the same region and AWS account that you are creating the resources.<br>It should match `availabilty` zones. | `string` | n/a | yes |
 | <a name="input_project"></a> [project](#input\_project) | Project name. It will be used as a prefix for all resources. | `string` | n/a | yes |
 | <a name="input_ssh"></a> [ssh](#input\_ssh) | SSH configuration. | <pre>object({<br>    port                = number<br>    allowed_cidr_blocks = list(string)<br>  })</pre> | <pre>{<br>  "allowed_cidr_blocks": [<br>    "0.0.0.0/0"<br>  ],<br>  "port": 22<br>}</pre> | no |
@@ -277,7 +278,7 @@ The resource iterates the map of objects provided by the [instances](#input_inst
   instance_type     = string
   key_name          = optional(string, "")
   availability_zone = string
-  disk_size         = number
+  disk_size         = optional(number, 8)
   additional_disks = optional(
     map(
       object({
@@ -312,6 +313,25 @@ The resource iterates the map of objects provided by the [instances](#input_inst
   tags = optional(map(string), {})
 }
 ```
+
+#### Instance parameters
+
+- `ami_id` accepts some pre-defined AMI names: `amzn2`, `al2023`, `ubuntu2204`. The pre-defined AMI will always get the latest AMI ID for the selected region.
+- `key_name` is the name of a pre-existent key created on the same region and AWS account that you are creating the resources. If not provided here, it uses the [key_name](#input_key_name) variable.
+- `availability_zone` must be a letter that represents the AZ. For example: "a". It will be concatenated with the ([aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region)) region name to create the AZ name.
+- `disk_size` is the root EBS volume size in GB. Default is 8.
+- `additional_disks` is a map of objects to describe additional disks to create/attach to the instance. The key must be a device name. See [EBS Volumes](#ebs-volumes) for more details.
+- `add_default_egress_sg_rules` and `add_default_ingress_sg_rules` are used to add the default sg rules to the instance security group. Default is `true` for `add_default_egress_sg_rules` and `false` for `add_default_ingress_sg_rules`.
+- `egress_sg_rules` and `ingress_sg_rules` are used to add additional sg rules to the instance security group. See [Security Groups](#security-groups) for more details.
+
+### Cloud-init
+
+The [cloudinit_config.instance](https://registry.terraform.io/providers/hashicorp/cloudinit/latest/docs/data-sources/config) data source is used to create the cloud-init configuration. The cloud-init configuration is used to:
+
+- Change the SSH port.
+- Disable SELinux.
+- Change hostname.
+- Set search domain.
 
 ## Examples
 
