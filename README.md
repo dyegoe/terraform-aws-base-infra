@@ -54,7 +54,7 @@ module "aws_base_infra" {
 
 ## Components
 
-All componentes names are prefixed with the project name (`var.project`). For example: `example-project-vpc`.
+All componentes names are prefixed with the [project name](#input_vpc). For example: `example-project-vpc`.
 
 ### VPC
 
