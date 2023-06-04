@@ -65,8 +65,8 @@ It uses [terraform-aws-modules/vpc/aws](https://registry.terraform.io/modules/te
 - No public subnets.
 - No public IP is mapped on launch.
 - Full DNS support.
-- CIDR block is defined by `var.vpc.cidr`.
-- [AZs](#azs) are defined by `var.vpc.azs`.
+- CIDR block is defined by [VPC CIDR](#input_vpc).
+- [AZs](#azs) are defined by [`var.vpc.azs`](#input_vpc).
 - Public subnets (CIDRs) are defined by `var.vpc.public_subnets`.
 - Additional tags to the VPC and public subnets using `var.vpc.tags` and `var.vpc.public_subnet_tags`
 
