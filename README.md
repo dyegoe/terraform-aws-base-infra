@@ -6,10 +6,11 @@ It creates:
 
 - [VPC](#vpc)
 - [Security Groups](#security-groups)
-- EIPs
-- Network interfaces
+- [Network interfaces](#network-interfaces)
+- [EIPs](#eips)
+- [Route53 records](#route53)
+- [EBS Volumes](#ebs-volumes)
 - EC2 instances
-- Route53 records
 
 ## Usage
 
@@ -52,53 +53,6 @@ module "aws_base_infra" {
 }
 ```
 
-## Components
-
-All componentes names are prefixed with the [project name](#input_vpc). For example: `example-project-vpc`.
-
-### VPC
-
-It uses [terraform-aws-modules/vpc/aws](https://registry.terraform.io/modules/terraform-aws-modules/vpc/aws/5.0.0) to create a VPC with the following characteristics:
-
-- No IPV6 support.
-- No NAT gateway.
-- No public subnets.
-- No public IP is mapped on launch.
-- Full DNS support.
-- CIDR block is defined by [VPC CIDR](#input_vpc).
-- [AZs](#azs) are defined by [`var.vpc.azs`](#input_vpc).
-- Public subnets (CIDRs) are defined by `var.vpc.public_subnets`.
-- Additional tags to the VPC and public subnets using `var.vpc.tags` and `var.vpc.public_subnet_tags`
-
-#### AZs
-
-The AZs must be a letter that represents the AZ. For example: ["a", "b", "c"]. It will be concatenated with the ([aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region)) region name to create the AZ name. The number of AZs must match the number of public subnets
-
-### Security Groups
-
-Each instace gets a security group. The security group name is the project name (`var.project`) concatenated with the instance name and a random string. For example: `example-project-sample-node0001-5f3a`. The random string is used to avoid security group name conflicts.
-
-#### Ingress/Egress rules
-
-The ingress/egress rules are defined by the following variables:
-
-- `var.default_ingress_sg_rules`
-- `var.default_egress_sg_rules`
-- `var.instances.ingress_sg_rules`
-- `var.instances.egress_sg_rules`
-- `var.instances.add_default_ingress_sg_rules`
-- `var.instances.add_default_egress_sg_rules`
-- `var.ssh.allowed_cidr_blocks`
-- `var.ssh.port`
-
-##### Default ingress/egress rules
-
-The default ingress/egress rules are applied to all instances security groups. It could be included to the instances security group if `var.instances.add_default_ingress_sg_rules` and/or `var.instances.add_default_egress_sg_rules` is set to `true`.
-
-##### Instance ingress/egress rules
-
-Additional ingress/egress rules can be provided to the instance security group using `var.instances.ingress_sg_rules` and `var.instances.egress_sg_rules`.
-
 <!-- markdownlint-disable MD033 -->
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
@@ -122,7 +76,7 @@ Additional ingress/egress rules can be provided to the instance security group u
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_vpc"></a> [vpc](#module\_vpc) | terraform-aws-modules/vpc/aws | ~> 4.0.2 |
+| <a name="module_vpc"></a> [vpc](#module\_vpc) | terraform-aws-modules/vpc/aws | ~> 5.0.0 |
 
 ## Resources
 
@@ -158,8 +112,8 @@ Additional ingress/egress rules can be provided to the instance security group u
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_default_egress_sg_rules"></a> [default\_egress\_sg\_rules](#input\_default\_egress\_sg\_rules) | Default security group egress rules.<br>It could be included to the instances security group if `add_default_egress_sg_rules` is set to true." | <pre>map(<br>    object({<br>      from_port   = number<br>      to_port     = number<br>      ip_protocol = string<br>      cidr_ipv4   = list(string)<br>      description = string<br>    })<br>  )</pre> | <pre>{<br>  "default_any_to_any": {<br>    "cidr_ipv4": [<br>      "0.0.0.0/0"<br>    ],<br>    "description": "Any to Any",<br>    "from_port": -1,<br>    "ip_protocol": "-1",<br>    "to_port": -1<br>  }<br>}</pre> | no |
-| <a name="input_default_ingress_sg_rules"></a> [default\_ingress\_sg\_rules](#input\_default\_ingress\_sg\_rules) | Default security group ingress rules.<br>  It could be included to the instances security group if `add_default_ingress_sg_rules` is set to true. | <pre>map(<br>    object({<br>      from_port   = number<br>      to_port     = number<br>      ip_protocol = string<br>      cidr_ipv4   = list(string)<br>      description = string<br>    })<br>  )</pre> | `{}` | no |
-| <a name="input_instances"></a> [instances](#input\_instances) | Map of objects to describe instances.<br>  Map key is used as a name for the instance and must be unique.<br>  Project name will be used as a prefix for the instance name.<br>  The `ami_id` accepts some pre-defined AMI names: `amzn2`, `al2023`, `ubuntu2204`.<br>  The pre-defined AMI will always get the latest AMI ID for the selected region."<br>  To add the default sg rules to the instance security group, set `add_default_egress_sg_rules` and/or `add_default_ingress_sg_rules` to `true`. | <pre>map(object({<br>    ami_id            = string<br>    instance_type     = string<br>    key_name          = optional(string, "")<br>    availability_zone = string<br>    disk_size         = number<br>    additional_disks = optional(<br>      map(<br>        object({<br>          size            = number<br>          mount_point     = string<br>          volume_id       = optional(string, "")<br>          prevent_destroy = optional(bool, false)<br>        })<br>    ), {})<br>    add_default_egress_sg_rules  = optional(bool, true)<br>    add_default_ingress_sg_rules = optional(bool, false)<br>    egress_sg_rules = optional(<br>      map(<br>        object({<br>          from_port   = number<br>          to_port     = number<br>          ip_protocol = string<br>          cidr_ipv4   = list(string)<br>          description = string<br>        })<br>    ), {})<br>    ingress_sg_rules = optional(<br>      map(<br>        object({<br>          from_port   = number<br>          to_port     = number<br>          ip_protocol = string<br>          cidr_ipv4   = list(string)<br>          description = string<br>        })<br>    ), {})<br>    tags = optional(map(string), {})<br>  }))</pre> | n/a | yes |
+| <a name="input_default_ingress_sg_rules"></a> [default\_ingress\_sg\_rules](#input\_default\_ingress\_sg\_rules) | Default security group ingress rules.<br>It could be included to the instances security group if `add_default_ingress_sg_rules` is set to true. | <pre>map(<br>    object({<br>      from_port   = number<br>      to_port     = number<br>      ip_protocol = string<br>      cidr_ipv4   = list(string)<br>      description = string<br>    })<br>  )</pre> | `{}` | no |
+| <a name="input_instances"></a> [instances](#input\_instances) | Map of objects to describe instances.<br>Map key is used as a name for the instance and must be unique.<br>Project name will be used as a prefix for the instance name.<br>The `ami_id` accepts some pre-defined AMI names: `amzn2`, `al2023`, `ubuntu2204`.<br>The pre-defined AMI will always get the latest AMI ID for the selected region."<br>The `additional_disks` is a map of objects to describe additional disks to create/attach to the instance. The key must be a device name.<br>To add the default sg rules to the instance security group, set `add_default_egress_sg_rules` and/or `add_default_ingress_sg_rules` to `true`. | <pre>map(object({<br>    ami_id            = string<br>    instance_type     = string<br>    key_name          = optional(string, "")<br>    availability_zone = string<br>    disk_size         = number<br>    additional_disks = optional(<br>      map(<br>        object({<br>          size            = number<br>          mount_point     = string<br>          volume_id       = optional(string, "")<br>          prevent_destroy = optional(bool, false)<br>        })<br>    ), {})<br>    add_default_egress_sg_rules  = optional(bool, true)<br>    add_default_ingress_sg_rules = optional(bool, false)<br>    egress_sg_rules = optional(<br>      map(<br>        object({<br>          from_port   = number<br>          to_port     = number<br>          ip_protocol = string<br>          cidr_ipv4   = list(string)<br>          description = string<br>        })<br>    ), {})<br>    ingress_sg_rules = optional(<br>      map(<br>        object({<br>          from_port   = number<br>          to_port     = number<br>          ip_protocol = string<br>          cidr_ipv4   = list(string)<br>          description = string<br>        })<br>    ), {})<br>    tags = optional(map(string), {})<br>  }))</pre> | n/a | yes |
 | <a name="input_key_name"></a> [key\_name](#input\_key\_name) | Pre-existent key name created on the same region and AWS account that you are creating the resources.<br>It should match `availabilty` zones. | `string` | n/a | yes |
 | <a name="input_project"></a> [project](#input\_project) | Project name. It will be used as a prefix for all resources. | `string` | n/a | yes |
 | <a name="input_ssh"></a> [ssh](#input\_ssh) | SSH configuration. | <pre>object({<br>    port                = number<br>    allowed_cidr_blocks = list(string)<br>  })</pre> | <pre>{<br>  "allowed_cidr_blocks": [<br>    "0.0.0.0/0"<br>  ],<br>  "port": 22<br>}</pre> | no |
@@ -177,6 +131,191 @@ Additional ingress/egress rules can be provided to the instance security group u
 | <a name="output_ssh"></a> [ssh](#output\_ssh) | It returns an object of SSH connection details. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 <!-- markdownlint-enable MD033 -->
+
+## Components
+
+All componentes names are prefixed with the [project name](#input_project). For example: `example-project-vpc`.
+
+### VPC
+
+It uses [terraform-aws-modules/vpc/aws](https://registry.terraform.io/modules/terraform-aws-modules/vpc/aws/5.0.0) to create a VPC with the following characteristics:
+
+- No IPV6 support.
+- No NAT gateway.
+- No public subnets.
+- No public IP is mapped on launch.
+- Full DNS support.
+- CIDR block is defined by [VPC CIDR](#input_vpc).
+- [AZs](#azs) are defined by [VPC AZs](#input_vpc).
+- Public subnets (CIDRs) are defined by [VPC public subnets](#input_vpc).
+- Additional tags to the VPC and public subnets using [VPC tags](#input_vpc) and [VPC public subnet tags](#input_vpc).
+
+#### AZs
+
+The AZs must be a letter that represents the AZ. For example: ["a", "b", "c"]. It will be concatenated with the ([aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region)) region name to create the AZ name. The number of AZs must match the number of public subnets
+
+### Security Groups
+
+Each instace gets a security group. The security group name is the [project name](#input_project) concatenated with the instance name and a random string. For example: `example-project-sample-node0001-5f3a`. The random string is used to avoid security group name conflicts.
+
+#### Ingress/Egress rules
+
+The ingress/egress rules are defined by the following variables:
+
+- `var.default_ingress_sg_rules`
+- `var.default_egress_sg_rules`
+- `var.instances.ingress_sg_rules`
+- `var.instances.egress_sg_rules`
+- `var.instances.add_default_ingress_sg_rules`
+- `var.instances.add_default_egress_sg_rules`
+- `var.ssh.allowed_cidr_blocks`
+- `var.ssh.port`
+
+Security group rules have the following syntax:
+
+```hcl
+{
+  from_port   = number
+  to_port     = number
+  ip_protocol = string
+  cidr_ipv4   = list(string)
+  description = string
+}
+```
+
+##### Default ingress/egress rules
+
+The default ingress/egress rules are applied to all instances security groups. It could be included to the instances security group if `var.instances.add_default_ingress_sg_rules` and/or `var.instances.add_default_egress_sg_rules` is set to `true`.
+
+##### Instance ingress/egress rules
+
+Additional ingress/egress rules can be provided to the instance security group using `var.instances.ingress_sg_rules` and `var.instances.egress_sg_rules`.
+
+### Network Interfaces
+
+Because of a limitation of the [aws_instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) resource, the network interfaces don't get tags. The workaround is to use the [aws_network_interface](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/network_interface) resource to create the network interfaces and then attach them to the instances. The network interface name is the [project name](#input_project) concatenated with the instance name. For example: `example-project-sample-node0001`.
+
+### EIPs
+
+Each instance gets an EIP. The EIP name is the [project name](#input_project) concatenated with the instance name. For example: `example-project-sample-node0001`.
+
+### Route53
+
+This componente expects a hosted zone under the same AWS account that you are creating the resource. The hosted zone name must match the [zone domain](#input_zone_domain). For example: `example.com`.
+
+Additionaly, the [project name](#input_project) is used as subdomain. For example: `example-project.example.com`.
+
+A internal zone ([aws_route53_record.internal](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record)) is created following the same subdomain pattern (`example-project.example.com`) and it is attached to the [VPC](#vpc).
+
+By design, two records are created for each instance:
+
+- `sample-node0001.example-project.example.com` on the public zone ([aws_route53_record.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record)) pointing to the [EIP](#eips).
+- `sample-node0001.example-project.example.com` on the internal zone ([aws_route53_record.internal](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record)) pointing to the [network interface](#network-interfaces) private ip.
+
+### EBS Volumes
+
+Each instance gets a root EBS volume when creating the instance. However, additional EBS volumes can be created and attached to the instance using the [additional disks](#input_instances) variable.
+
+```hcl
+variable "instances" {
+  ...
+    additional_disks = optional(
+      map(
+        object({
+          size            = number
+          mount_point     = string
+          volume_id       = optional(string, "")
+          prevent_destroy = optional(bool, false)
+        })
+    ), {})
+  ...
+}
+```
+
+The variable above is iterated in different local variables to create the EBS volumes and attach them to the instance.
+
+- `local.additional_disks_to_create_prevent_destroy` is a map of objects to create the EBS volumes with the `prevent_destroy` attribute set to `true` and `volume_id` is not provided.
+- `local.additional_disks_to_create` is a map of objects to create the EBS volumes with the `prevent_destroy` attribute set to `false` and `volume_id` is not provided.
+- `local.additional_disks_to_attach` is a map of objects to attach the EBS volumes to the instance. It attaches all volumes created by `local.additional_disks_to_create_prevent_destroy` and `local.additional_disks_to_create` and also the volumes that already exists (`volume_id` is provided).
+
+**NB**: The `prevent_destroy` attribute is used to avoid destroying the EBS volume when running `terraform destroy`.
+
+You must remove the resource manually:
+
+```bash
+terraform state list
+terraform state show 'module.aws_base_infra.aws_ebs_volume.create["sample-master01_sdb"]'
+terraform state rm 'module.aws_base_infra.aws_ebs_volume.create["sample-master01_sdb"]'
+terraform destroy
+```
+
+Then, you can use this EBS volume later by providing the `volume_id` attribute that matches `id` from the `terraform state show` command above.
+
+```hcl
+variable "instances" {
+  ...
+    additional_disks = {
+      sdb = {
+        size            = 8
+        mount_point     = "/data"
+        volume_id       = "vol-0a1b2c3d4e5f6g7h8"
+      }
+    }
+  ...
+}
+```
+
+### EC2 instances
+
+The resource [aws_instance.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) is used to create the instances. The instance name is the [project name](#input_project) concatenated with the instance name. For example: `example-project-sample-node0001`.
+
+The resource iterates the map of objects provided by the [instances](#input_instances) variable to create the instances. Each map key represents the instance name and must be unique.
+
+```hcl
+{
+  ami_id            = string
+  instance_type     = string
+  key_name          = optional(string, "")
+  availability_zone = string
+  disk_size         = number
+  additional_disks = optional(
+    map(
+      object({
+        size            = number
+        mount_point     = string
+        volume_id       = optional(string, "")
+        prevent_destroy = optional(bool, false)
+      })
+  ), {})
+  add_default_egress_sg_rules  = optional(bool, true)
+  add_default_ingress_sg_rules = optional(bool, false)
+  egress_sg_rules = optional(
+    map(
+      object({
+        from_port   = number
+        to_port     = number
+        ip_protocol = string
+        cidr_ipv4   = list(string)
+        description = string
+      })
+  ), {})
+  ingress_sg_rules = optional(
+    map(
+      object({
+        from_port   = number
+        to_port     = number
+        ip_protocol = string
+        cidr_ipv4   = list(string)
+        description = string
+      })
+  ), {})
+  tags = optional(map(string), {})
+}
+```
+
+## Examples
+
+You can find an example [here](examples/) of how to use this module.
 
 ## Authors
 

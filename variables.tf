@@ -98,8 +98,8 @@ It could be included to the instances security group if `add_default_egress_sg_r
 
 variable "default_ingress_sg_rules" {
   description = <<EOT
-  Default security group ingress rules.
-  It could be included to the instances security group if `add_default_ingress_sg_rules` is set to true.
+Default security group ingress rules.
+It could be included to the instances security group if `add_default_ingress_sg_rules` is set to true.
   EOT
   type = map(
     object({
@@ -116,12 +116,13 @@ variable "default_ingress_sg_rules" {
 ##### Instances
 variable "instances" {
   description = <<EOT
-  Map of objects to describe instances.
-  Map key is used as a name for the instance and must be unique.
-  Project name will be used as a prefix for the instance name.
-  The `ami_id` accepts some pre-defined AMI names: `amzn2`, `al2023`, `ubuntu2204`.
-  The pre-defined AMI will always get the latest AMI ID for the selected region."
-  To add the default sg rules to the instance security group, set `add_default_egress_sg_rules` and/or `add_default_ingress_sg_rules` to `true`.
+Map of objects to describe instances.
+Map key is used as a name for the instance and must be unique.
+Project name will be used as a prefix for the instance name.
+The `ami_id` accepts some pre-defined AMI names: `amzn2`, `al2023`, `ubuntu2204`.
+The pre-defined AMI will always get the latest AMI ID for the selected region."
+The `additional_disks` is a map of objects to describe additional disks to create/attach to the instance. The key must be a device name.
+To add the default sg rules to the instance security group, set `add_default_egress_sg_rules` and/or `add_default_ingress_sg_rules` to `true`.
   EOT
   type = map(object({
     ami_id            = string

@@ -34,8 +34,8 @@ module "aws_base_infra" {
   source = "../"
 
   project     = local.project
-  key_name    = "default"              # This is a sample key, you should change it to your own key. It must be a key already created in AWS
-  zone_domain = "this-is-a-sample.com" # This is a sample domain, you should change it to your own domain. It must be a domain hosted in Route53
+  key_name    = "default"          # This is a sample key, you should change it to your own key. It must be a key already created in AWS
+  zone_domain = "aws.dyego.com.br" # This is a sample domain, you should change it to your own domain. It must be a domain hosted in Route53
   volume_type = "gp3"
 
   vpc = {
@@ -71,16 +71,12 @@ module "aws_base_infra" {
         sdb = {
           size        = 1
           mount_point = "/mnt/sdb"
-        }
-        sdc = {
-          size        = 1
-          mount_point = "/mnt/sdc"
           # prevent_destroy = true # This is an example how to prevent the volume to be destroyed
         }
         # This an example how to add an existing volume to the instance
-        # sdd = {
+        # sdc = {
         #   size        = 1
-        #   mount_point = "/srv"
+        #   mount_point = "/mnt/sdc"
         #   volume_id   = "vol-0c3eb3655dd853f3c"
         # }
       }
