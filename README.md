@@ -32,7 +32,13 @@ module "aws_base_infra" {
   }
 
   default_ingress_sg_rules = {
-    internal = { from_port = -1, to_port = -1, ip_protocol = "-1", cidr_ipv4 = ["0.0.0.0/0"], description = "Allow any from anywhere" }
+    internal = {
+      from_port = -1,
+      to_port = -1,
+      ip_protocol = "-1",
+      cidr_ipv4 = ["0.0.0.0/0"],
+      description = "Allow any from anywhere"
+    }
   }
 
   instances = {
