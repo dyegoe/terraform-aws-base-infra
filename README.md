@@ -4,8 +4,8 @@ This module itends to deploy some base infrasctructure to AWS.
 
 It creates:
 
-- VPC with public subnets (IPv4 only)
-- Security Group with SSH access
+- [VPC](#vpc)
+- [Security Groups](#security-groups)
 - EIPs
 - Network interfaces
 - EC2 instances
@@ -15,19 +15,19 @@ It creates:
 
 ```hcl
 module "aws_base_infra" {
-  # source = "github.com/dyegoe/terraform-aws-base-infra?ref=main"
+  source = "github.com/dyegoe/terraform-aws-base-infra?ref=main"
 
   project     = "example-project"
   key_name    = "default"
   zone_domain = "example.com"
 
   vpc = {
-    cidr = "10.0.0.0/24"
+    cidr = "192.168.56.0/24"
     azs  = ["a", "b", "c"]
     public_subnets = [
-      "10.0.0.0/26",
-      "10.0.0.64/26",
-      "10.0.0.128/26"
+      "192.168.56.0/26",
+      "192.168.56.64/26",
+      "192.168.56.128/26"
     ]
   }
 
@@ -45,6 +45,53 @@ module "aws_base_infra" {
   }
 }
 ```
+
+## Components
+
+All componentes names are prefixed with the project name (`var.project`). For example: `example-project-vpc`.
+
+### VPC
+
+It uses [terraform-aws-modules/vpc/aws](https://registry.terraform.io/modules/terraform-aws-modules/vpc/aws/5.0.0) to create a VPC with the following characteristics:
+
+- No IPV6 support.
+- No NAT gateway.
+- No public subnets.
+- No public IP is mapped on launch.
+- Full DNS support.
+- CIDR block is defined by `var.vpc.cidr`.
+- [AZs](#azs) are defined by `var.vpc.azs`.
+- Public subnets (CIDRs) are defined by `var.vpc.public_subnets`.
+- Additional tags to the VPC and public subnets using `var.vpc.tags` and `var.vpc.public_subnet_tags`
+
+#### AZs
+
+The AZs must be a letter that represents the AZ. For example: ["a", "b", "c"]. It will be concatenated with the ([aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region)) region name to create the AZ name. The number of AZs must match the number of public subnets
+
+### Security Groups
+
+Each instace gets a security group. The security group name is the project name (`var.project`) concatenated with the instance name and a random string. For example: `example-project-sample-node0001-5f3a`. The random string is used to avoid security group name conflicts.
+
+#### Ingress/Egress rules
+
+The ingress/egress rules are defined by the following variables:
+
+- `var.default_ingress_sg_rules`
+- `var.default_egress_sg_rules`
+- `var.instances.ingress_sg_rules`
+- `var.instances.egress_sg_rules`
+- `var.instances.add_default_ingress_sg_rules`
+- `var.instances.add_default_egress_sg_rules`
+- `var.ssh.allowed_cidr_blocks`
+- `var.ssh.port`
+
+##### Default ingress/egress rules
+
+The default ingress/egress rules are applied to all instances security groups. It could be included to the instances security group if `var.instances.add_default_ingress_sg_rules` and/or `var.instances.add_default_egress_sg_rules` is set to `true`.
+
+##### Instance ingress/egress rules
+
+Additional ingress/egress rules can be provided to the instance security group using `var.instances.ingress_sg_rules` and `var.instances.egress_sg_rules`.
 
 <!-- markdownlint-disable MD033 -->
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

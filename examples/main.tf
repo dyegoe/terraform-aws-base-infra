@@ -39,12 +39,12 @@ module "aws_base_infra" {
   volume_type = "gp3"
 
   vpc = {
-    cidr = "10.0.0.0/24"
+    cidr = "192.168.56.0/24"
     azs  = ["a", "b", "c"]
     public_subnets = [
-      "10.0.0.0/26",
-      "10.0.0.64/26",
-      "10.0.0.128/26"
+      "192.168.56.0/26",
+      "192.168.56.64/26",
+      "192.168.56.128/26"
     ]
   }
 
@@ -70,8 +70,19 @@ module "aws_base_infra" {
       additional_disks = {
         sdb = {
           size        = 1
-          mount_point = "/data"
+          mount_point = "/mnt/sdb"
         }
+        sdc = {
+          size        = 1
+          mount_point = "/mnt/sdc"
+          # prevent_destroy = true # This is an example how to prevent the volume to be destroyed
+        }
+        # This an example how to add an existing volume to the instance
+        # sdd = {
+        #   size        = 1
+        #   mount_point = "/srv"
+        #   volume_id   = "vol-0c3eb3655dd853f3c"
+        # }
       }
       add_default_egress_sg_rules  = false
       add_default_ingress_sg_rules = false
@@ -86,31 +97,19 @@ module "aws_base_infra" {
       }
     }
     sample-node0001 = {
-      ami_id            = "al2023" # This is an example how to use a pre-defined AMI name
-      instance_type     = "t3.nano"
-      key_name          = "default" # This is a sample key, you should change it to your own key. It must be a key already created in AWS
-      availability_zone = "a"       # The availability zone must be a letter (a, b, c, ...)
-      disk_size         = 8
-      additional_disks = {
-        sdb = {
-          size        = 1
-          mount_point = "/data"
-          # prevent_destroy = true # This is an example how to prevent the volume to be destroyed
-        }
-        # This an example how to add an existing volume to the instance
-        # sdd = {
-        #   size        = 1
-        #   mount_point = "/srv"
-        #   volume_id   = "vol-0c3eb3655dd853f3c"
-        # }
-      }
+      ami_id                       = "amzn2" # This is an example how to use a pre-defined AMI name
+      instance_type                = "t3.nano"
+      availability_zone            = "a"
+      disk_size                    = 8
       add_default_egress_sg_rules  = true # This is an example how to add the default egress sg rules to the instance security group
       add_default_ingress_sg_rules = true # This is an example how to add the default ingress sg rules to the instance security group
-      egress_sg_rules              = {}
-      ingress_sg_rules             = {}
-      tags = {
-        AnyAdditional = "Tag"
-      }
+    }
+    sample-node0002 = {
+      ami_id                       = "ubuntu2204"
+      instance_type                = "t3.nano"
+      availability_zone            = "a"
+      disk_size                    = 8
+      add_default_ingress_sg_rules = true
     }
   }
 }
