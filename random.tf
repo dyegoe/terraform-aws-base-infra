@@ -12,3 +12,12 @@ resource "random_id" "instance_sg" {
   }
   byte_length = 32
 }
+
+resource "random_id" "shared_sg" {
+  for_each = var.security_groups
+
+  keepers = {
+    security_groups = jsonencode(var.security_groups[each.key])
+  }
+  byte_length = 32
+}

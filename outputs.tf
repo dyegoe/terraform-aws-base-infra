@@ -1,11 +1,3 @@
-output "ssh" {
-  description = "It returns an object of SSH connection details."
-  value = {
-    port                = var.ssh.port
-    allowed_cidr_blocks = var.ssh.allowed_cidr_blocks
-  }
-}
-
 output "instances" {
   description = "It returns an object of all instances created by the module."
   value = {
@@ -32,12 +24,27 @@ output "instances" {
   }
 }
 
-output "egress_sg_rules" {
-  description = "It returns an object of egress security group rules."
-  value       = local.instances_egress_sg_rules
+output "shared_security_groups_id" {
+  description = "It returns an object of shared security groups id."
+  value       = { for k, v in aws_security_group.shared : k => v.id }
 }
 
-output "ingress_sg_rules" {
-  description = "It returns an object of ingress security group rules."
-  value       = local.instances_ingress_sg_rules
+output "shared_security_group_egress_rules" {
+  description = "It returns an object of shared security group egress rules."
+  value       = local.shared_security_group_egress_rules
+}
+
+output "shared_security_group_ingress_rules" {
+  description = "It returns an object of shared security group ingress rules."
+  value       = local.shared_security_group_ingress_rules
+}
+
+output "instances_security_group_egress_rules" {
+  description = "It returns an object of instances security group egress rules."
+  value       = local.instances_security_group_egress_rules
+}
+
+output "instances_security_group_ingress_rules" {
+  description = "It returns an object of instances security group ingress rules."
+  value       = local.instances_security_group_ingress_rules
 }
