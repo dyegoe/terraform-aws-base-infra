@@ -2,79 +2,132 @@ locals {
   resource_name_prefix = var.project
   azs                  = formatlist("${data.aws_region.current.name}%s", var.vpc.azs)
   zone_domain          = "${local.resource_name_prefix}.${var.zone_domain}"
+  ##### Create a map of shared security groups egress rules
+  shared_security_group_egress_rules = {
+    for _, v in flatten([
+      for security_group, sg in var.security_groups : [
+        concat(
+          [
+            for rule, r in sg["egress"] : [
+              for c, cidr in r.cidr_ipv4 : {
+                name           = "${security_group}_${rule}_${c}"
+                security_group = security_group
+                rule           = rule
+                cidr_index     = c
+                from_port      = r.from_port
+                to_port        = r.to_port
+                ip_protocol    = r.ip_protocol
+                cidr_ipv4      = cidr
+                self           = false
+                description    = r.description
+              }
+            ] if r.cidr_ipv4 != null ? length(r.cidr_ipv4) > 0 : false
+          ],
+          [
+            for rule, r in sg["egress"] : [{
+              name           = "${security_group}_${rule}"
+              security_group = security_group
+              rule           = rule
+              cidr_index     = 0
+              from_port      = r.from_port
+              to_port        = r.to_port
+              ip_protocol    = r.ip_protocol
+              cidr_ipv4      = null
+              self           = r.self
+              description    = r.description
+            }] if r.self != null && r.self == true
+          ]
+        )
+      ] if sg["egress"] != null
+    ]) : v.name => v
+  }
+  ##### Create a map of shared security groups ingress rules
+  shared_security_group_ingress_rules = {
+    for _, v in flatten([
+      for security_group, sg in var.security_groups : [
+        concat(
+          [
+            for rule, r in sg["ingress"] : [
+              for c, cidr in r.cidr_ipv4 : {
+                name           = "${security_group}_${rule}_${c}"
+                security_group = security_group
+                rule           = rule
+                cidr_index     = c
+                from_port      = r.from_port
+                to_port        = r.to_port
+                ip_protocol    = r.ip_protocol
+                cidr_ipv4      = cidr
+                self           = false
+                description    = r.description
+              }
+            ] if r.cidr_ipv4 != null ? length(r.cidr_ipv4) > 0 : false
+          ],
+          [
+            for rule, r in sg["ingress"] : [{
+              name           = "${security_group}_${rule}"
+              security_group = security_group
+              rule           = rule
+              cidr_index     = 0
+              from_port      = r.from_port
+              to_port        = r.to_port
+              ip_protocol    = r.ip_protocol
+              cidr_ipv4      = null
+              self           = r.self
+              description    = r.description
+            }] if r.self != null && r.self == true
+          ]
+        )
+      ] if sg["ingress"] != null
+    ]) : v.name => v
+  }
   ##### Merge default sg rules with instance sg rules
-  instances_egress_sg_rules_merged = {
+  instances_security_group_egress_rules_merged = {
     for instance, i in var.instances :
     instance => i.add_default_egress_sg_rules == false ? i.egress_sg_rules : merge(var.default_egress_sg_rules, i.egress_sg_rules)
   }
-  instances_ingress_sg_rules_merged = {
+  instances_security_group_ingress_rules_merged = {
     for instance, i in var.instances :
-    instance => merge(
-      i.add_default_ingress_sg_rules == false ? i.ingress_sg_rules : merge(var.default_ingress_sg_rules, i.ingress_sg_rules),
-      { default_ssh = { from_port = var.ssh.port, to_port = var.ssh.port, ip_protocol = "tcp", cidr_ipv4 = var.ssh.allowed_cidr_blocks, description = "SSH Port - Default rules" } }
-    )
+    instance => i.add_default_ingress_sg_rules == false ? i.ingress_sg_rules : merge(var.default_ingress_sg_rules, i.ingress_sg_rules)
   }
-  ##### Temporary transformation of egress sg rules
-  instances_egress_sg_rules_tmp = [
-    for instance, i in var.instances : [
-      for rule, r in local.instances_egress_sg_rules_merged[instance] : [
-        for c, cidr_ipv4 in r.cidr_ipv4 : {
-          name        = "${instance}_${rule}_${c}"
-          instance    = instance
-          rule        = rule
-          cidr_index  = c
-          from_port   = r.from_port
-          to_port     = r.to_port
-          ip_protocol = r.ip_protocol
-          cidr_ipv4   = cidr_ipv4
-          description = r.description
-        }
+  #### Create a map of instances egress sg rules
+  instances_security_group_egress_rules = {
+    for _, rule in flatten([
+      for instance, i in var.instances : [
+        for rule, r in local.instances_security_group_egress_rules_merged[instance] : [
+          for c, cidr_ipv4 in r.cidr_ipv4 : {
+            name        = "${instance}_${rule}_${c}"
+            instance    = instance
+            rule        = rule
+            cidr_index  = c
+            from_port   = r.from_port
+            to_port     = r.to_port
+            ip_protocol = r.ip_protocol
+            cidr_ipv4   = cidr_ipv4
+            description = r.description
+          }
+        ]
       ]
-    ]
-  ]
-  #### Create a map of egress sg rules
-  instances_egress_sg_rules = {
-    for _, rule in flatten(local.instances_egress_sg_rules_tmp) : rule.name => {
-      instance    = rule.instance
-      rule        = rule.rule
-      cidr_index  = rule.cidr_index
-      from_port   = rule.from_port
-      to_port     = rule.to_port
-      ip_protocol = rule.ip_protocol
-      cidr_ipv4   = rule.cidr_ipv4
-      description = rule.description
-    }
+    ]) : rule.name => rule
   }
-  ##### Temporary transformation of ingress sg rules
-  instances_ingress_sg_rules_tmp = [
-    for instance, i in var.instances : [
-      for rule, r in local.instances_ingress_sg_rules_merged[instance] : [
-        for c, cidr_ipv4 in r.cidr_ipv4 : {
-          name        = "${instance}_${rule}_${c}"
-          instance    = instance
-          rule        = rule
-          cidr_index  = c
-          from_port   = r.from_port
-          to_port     = r.to_port
-          ip_protocol = r.ip_protocol
-          cidr_ipv4   = cidr_ipv4
-          description = r.description
-        }
+  #### Create a map of instances ingress sg rules
+  instances_security_group_ingress_rules = {
+    for _, rule in flatten([
+      for instance, i in var.instances : [
+        for rule, r in local.instances_security_group_ingress_rules_merged[instance] : [
+          for c, cidr_ipv4 in r.cidr_ipv4 : {
+            name        = "${instance}_${rule}_${c}"
+            instance    = instance
+            rule        = rule
+            cidr_index  = c
+            from_port   = r.from_port
+            to_port     = r.to_port
+            ip_protocol = r.ip_protocol
+            cidr_ipv4   = cidr_ipv4
+            description = r.description
+          }
+        ]
       ]
-    ]
-  ]
-  #### Create a map of ingress sg rules
-  instances_ingress_sg_rules = {
-    for _, rule in flatten(local.instances_ingress_sg_rules_tmp) : rule.name => {
-      instance    = rule.instance
-      rule        = rule.rule
-      cidr_index  = rule.cidr_index
-      from_port   = rule.from_port
-      to_port     = rule.to_port
-      ip_protocol = rule.ip_protocol
-      description = rule.description
-      cidr_ipv4   = rule.cidr_ipv4
-    }
+    ]) : rule.name => rule
   }
   ##### Temporary transformation of additional disks
   additional_disks_tmp = flatten([

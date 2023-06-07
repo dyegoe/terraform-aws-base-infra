@@ -2,16 +2,30 @@
 
 This module itends to deploy some base infrasctructure to AWS.
 
-It creates:
-
-- [VPC](#vpc)
-- [Security Groups](#security-groups)
-- [Network interfaces](#network-interfaces)
-- [EIPs](#eips)
-- [Route53 records](#route53)
-- [EBS Volumes](#ebs-volumes)
-- [EC2 instances](#ec2-instances)
-- [Cloud-init](#cloud-init)
+- [AWS Base Infra Terraform module](#aws-base-infra-terraform-module)
+  - [Usage](#usage)
+  - [Requirements](#requirements)
+  - [Providers](#providers)
+  - [Modules](#modules)
+  - [Resources](#resources)
+  - [Inputs](#inputs)
+  - [Outputs](#outputs)
+  - [Components](#components)
+    - [VPC](#vpc)
+      - [AZs](#azs)
+    - [Security Groups](#security-groups)
+      - [Shared security groups](#shared-security-groups)
+      - [Instances egress/ingress rules](#instances-egressingress-rules)
+    - [Network Interfaces](#network-interfaces)
+    - [EIPs](#eips)
+    - [Route53](#route53)
+    - [EBS Volumes](#ebs-volumes)
+    - [EC2 instances](#ec2-instances)
+      - [Instance parameters](#instance-parameters)
+    - [Cloud-init](#cloud-init)
+  - [Examples](#examples)
+  - [Authors](#authors)
+  - [License](#license)
 
 ## Usage
 
@@ -93,12 +107,16 @@ module "aws_base_infra" {
 | [aws_route53_record.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_route53_zone.internal](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_zone) | resource |
 | [aws_security_group.instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
+| [aws_security_group.shared](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
 | [aws_volume_attachment.attach](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/volume_attachment) | resource |
 | [aws_volume_attachment.create](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/volume_attachment) | resource |
 | [aws_volume_attachment.create_prevent_destroy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/volume_attachment) | resource |
 | [aws_vpc_security_group_egress_rule.instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_egress_rule) | resource |
+| [aws_vpc_security_group_egress_rule.shared](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_egress_rule) | resource |
 | [aws_vpc_security_group_ingress_rule.instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_ingress_rule) | resource |
+| [aws_vpc_security_group_ingress_rule.shared](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_security_group_ingress_rule) | resource |
 | [random_id.instance_sg](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
+| [random_id.shared_sg](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
 | [aws_default_tags.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/default_tags) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 | [aws_route53_zone.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
@@ -112,12 +130,13 @@ module "aws_base_infra" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_default_egress_sg_rules"></a> [default\_egress\_sg\_rules](#input\_default\_egress\_sg\_rules) | Default security group egress rules.<br>It could be included to the instances security group if `add_default_egress_sg_rules` is set to true." | <pre>map(<br>    object({<br>      from_port   = number<br>      to_port     = number<br>      ip_protocol = string<br>      cidr_ipv4   = list(string)<br>      description = string<br>    })<br>  )</pre> | <pre>{<br>  "default_any_to_any": {<br>    "cidr_ipv4": [<br>      "0.0.0.0/0"<br>    ],<br>    "description": "Any to Any",<br>    "from_port": -1,<br>    "ip_protocol": "-1",<br>    "to_port": -1<br>  }<br>}</pre> | no |
-| <a name="input_default_ingress_sg_rules"></a> [default\_ingress\_sg\_rules](#input\_default\_ingress\_sg\_rules) | Default security group ingress rules.<br>It could be included to the instances security group if `add_default_ingress_sg_rules` is set to true. | <pre>map(<br>    object({<br>      from_port   = number<br>      to_port     = number<br>      ip_protocol = string<br>      cidr_ipv4   = list(string)<br>      description = string<br>    })<br>  )</pre> | `{}` | no |
-| <a name="input_instances"></a> [instances](#input\_instances) | Map of objects to describe instances.<br>Map key is used as a name for the instance and must be unique.<br>Project name will be used as a prefix for the instance name.<br>The `ami_id` accepts some pre-defined AMI names: `amzn2`, `al2023`, `ubuntu2204`.<br>The pre-defined AMI will always get the latest AMI ID for the selected region."<br>The `additional_disks` is a map of objects to describe additional disks to create/attach to the instance. The key must be a device name.<br>To add the default sg rules to the instance security group, set `add_default_egress_sg_rules` and/or `add_default_ingress_sg_rules` to `true`. | <pre>map(object({<br>    ami_id            = string<br>    instance_type     = string<br>    key_name          = optional(string, "")<br>    availability_zone = string<br>    disk_size         = optional(number, 8)<br>    additional_disks = optional(<br>      map(<br>        object({<br>          size            = number<br>          mount_point     = string<br>          volume_id       = optional(string, "")<br>          prevent_destroy = optional(bool, false)<br>        })<br>    ), {})<br>    add_default_egress_sg_rules  = optional(bool, true)<br>    add_default_ingress_sg_rules = optional(bool, false)<br>    egress_sg_rules = optional(<br>      map(<br>        object({<br>          from_port   = number<br>          to_port     = number<br>          ip_protocol = string<br>          cidr_ipv4   = list(string)<br>          description = string<br>        })<br>    ), {})<br>    ingress_sg_rules = optional(<br>      map(<br>        object({<br>          from_port   = number<br>          to_port     = number<br>          ip_protocol = string<br>          cidr_ipv4   = list(string)<br>          description = string<br>        })<br>    ), {})<br>    tags = optional(map(string), {})<br>  }))</pre> | n/a | yes |
+| <a name="input_default_egress_sg_rules"></a> [default\_egress\_sg\_rules](#input\_default\_egress\_sg\_rules) | Default egress rules that could be added to instances security groups<br>when `add_default_egress_sg_rules` is set to true for each instance. | <pre>map(<br>    object({<br>      from_port   = number<br>      to_port     = number<br>      ip_protocol = string<br>      cidr_ipv4   = list(string)<br>      description = string<br>    })<br>  )</pre> | <pre>{<br>  "default_any_to_any": {<br>    "cidr_ipv4": [<br>      "0.0.0.0/0"<br>    ],<br>    "description": "Any to Any",<br>    "from_port": -1,<br>    "ip_protocol": "-1",<br>    "to_port": -1<br>  }<br>}</pre> | no |
+| <a name="input_default_ingress_sg_rules"></a> [default\_ingress\_sg\_rules](#input\_default\_ingress\_sg\_rules) | Default ingress rules that could be added to instances security groups<br>when `add_default_ingress_sg_rules` is set to true for each instance. | <pre>map(<br>    object({<br>      from_port   = number<br>      to_port     = number<br>      ip_protocol = string<br>      cidr_ipv4   = list(string)<br>      description = string<br>    })<br>  )</pre> | `{}` | no |
+| <a name="input_instances"></a> [instances](#input\_instances) | Map of objects to describe instances.<br>Map key is used as a name for the instance and must be unique.<br>Project name will be used as a prefix for the instance name.<br>The `ami_id` accepts some pre-defined AMI names: `amzn2`, `al2023`, `ubuntu2204`.<br>The pre-defined AMI will always get the latest AMI ID for the selected region."<br>The `additional_disks` is a map of objects to describe additional disks to create/attach to the instance. The key must be a device name.<br>The `additional_security_groups` is a list of security groups to add to the instance. It must be a key from the `security_groups` variable.<br>To add the default sg rules to the instance security group, set `add_default_egress_sg_rules` and/or `add_default_ingress_sg_rules` to `true`. | <pre>map(object({<br>    ami_id            = string<br>    instance_type     = string<br>    key_name          = optional(string, "")<br>    availability_zone = string<br>    disk_size         = optional(number, 8)<br>    additional_disks = optional(map(object({<br>      size            = number<br>      mount_point     = string<br>      volume_id       = optional(string, "")<br>      prevent_destroy = optional(bool, false)<br>    })), {})<br>    additional_security_groups   = optional(list(string), [])<br>    add_default_egress_sg_rules  = optional(bool, false)<br>    add_default_ingress_sg_rules = optional(bool, false)<br>    egress_sg_rules = optional(map(object({<br>      from_port   = number<br>      to_port     = number<br>      ip_protocol = string<br>      cidr_ipv4   = list(string)<br>      description = string<br>    })), {})<br>    ingress_sg_rules = optional(map(object({<br>      from_port   = number<br>      to_port     = number<br>      ip_protocol = string<br>      cidr_ipv4   = list(string)<br>      description = string<br>    })), {})<br>    tags = optional(map(string), {})<br>  }))</pre> | n/a | yes |
 | <a name="input_key_name"></a> [key\_name](#input\_key\_name) | Pre-existent key name created on the same region and AWS account that you are creating the resources.<br>It should match `availabilty` zones. | `string` | n/a | yes |
 | <a name="input_project"></a> [project](#input\_project) | Project name. It will be used as a prefix for all resources. | `string` | n/a | yes |
-| <a name="input_ssh"></a> [ssh](#input\_ssh) | SSH configuration. | <pre>object({<br>    port                = number<br>    allowed_cidr_blocks = list(string)<br>  })</pre> | <pre>{<br>  "allowed_cidr_blocks": [<br>    "0.0.0.0/0"<br>  ],<br>  "port": 22<br>}</pre> | no |
+| <a name="input_security_groups"></a> [security\_groups](#input\_security\_groups) | Map of objects to describe security groups and its rules. | <pre>map(object({<br>    description = string<br>    ingress = optional(map(object({<br>      from_port   = number<br>      to_port     = number<br>      ip_protocol = string<br>      cidr_ipv4   = optional(list(string))<br>      self        = optional(bool)<br>      description = string<br>    })))<br>    egress = optional(map(object({<br>      from_port   = number<br>      to_port     = number<br>      ip_protocol = string<br>      cidr_ipv4   = optional(list(string), null)<br>      self        = optional(bool, false)<br>      description = string<br>    })))<br>  }))</pre> | n/a | yes |
+| <a name="input_ssh_port"></a> [ssh\_port](#input\_ssh\_port) | SSH port. | `number` | `22` | no |
 | <a name="input_volume_type"></a> [volume\_type](#input\_volume\_type) | EBS Volume Type. | `string` | `"gp3"` | no |
 | <a name="input_vpc"></a> [vpc](#input\_vpc) | A object containing VPC information.<br>AZs must be a letter that represents the AZ.<br>For example: [\"a\", \"b\", \"c\"].<br>Number of public subnets must match the number of availability zones.<br>Tags are applied to all resources for the VPC. | <pre>object({<br>    cidr               = string<br>    azs                = list(string)<br>    public_subnets     = list(string)<br>    public_subnet_tags = optional(map(string), {})<br>    tags               = optional(map(string), {})<br>  })</pre> | n/a | yes |
 | <a name="input_zone_domain"></a> [zone\_domain](#input\_zone\_domain) | A already hosted Route53 domain under the same AWS account that you are creating the resource. | `string` | n/a | yes |
@@ -126,10 +145,12 @@ module "aws_base_infra" {
 
 | Name | Description |
 |------|-------------|
-| <a name="output_egress_sg_rules"></a> [egress\_sg\_rules](#output\_egress\_sg\_rules) | It returns an object of egress security group rules. |
-| <a name="output_ingress_sg_rules"></a> [ingress\_sg\_rules](#output\_ingress\_sg\_rules) | It returns an object of ingress security group rules. |
 | <a name="output_instances"></a> [instances](#output\_instances) | It returns an object of all instances created by the module. |
-| <a name="output_ssh"></a> [ssh](#output\_ssh) | It returns an object of SSH connection details. |
+| <a name="output_instances_security_group_egress_rules"></a> [instances\_security\_group\_egress\_rules](#output\_instances\_security\_group\_egress\_rules) | It returns an object of instances security group egress rules. |
+| <a name="output_instances_security_group_ingress_rules"></a> [instances\_security\_group\_ingress\_rules](#output\_instances\_security\_group\_ingress\_rules) | It returns an object of instances security group ingress rules. |
+| <a name="output_shared_security_group_egress_rules"></a> [shared\_security\_group\_egress\_rules](#output\_shared\_security\_group\_egress\_rules) | It returns an object of shared security group egress rules. |
+| <a name="output_shared_security_group_ingress_rules"></a> [shared\_security\_group\_ingress\_rules](#output\_shared\_security\_group\_ingress\_rules) | It returns an object of shared security group ingress rules. |
+| <a name="output_shared_security_groups_id"></a> [shared\_security\_groups\_id](#output\_shared\_security\_groups\_id) | It returns an object of shared security groups id. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 <!-- markdownlint-enable MD033 -->
 
@@ -157,20 +178,41 @@ The AZs must be a letter that represents the AZ. For example: ["a", "b", "c"]. I
 
 ### Security Groups
 
+#### Shared security groups
+
+Shared security groups are created iterating over the [security group](#input_security_groups) variable. The security group name is the [project name](#input_project) concatenated with the security group name. For example: `example-project-sample-sg`.
+
+The map keys are the security group names and must be unique. Each security group has two lists: egress/ingress rules.
+
+The egress/ingress rules are defined by the following syntax:
+
+```hcl
+{
+  from_port   = number
+  to_port     = number
+  ip_protocol = string
+  cidr_ipv4   = optional(list(string), null)
+  self        = optional(bool, false)
+  description = string
+}
+```
+
+- The `cidr_ipv4` and `self` are optional.
+- If `self` is set to `true` the security group id will be used as source or destination. Then `cidr_ipv4` is not required and will be ignored.
+- If `self` is set to `false` the `cidr_ipv4` is required and the security group id will be ignored.
+
+#### Instances egress/ingress rules
+
 Each instace gets a security group. The security group name is the [project name](#input_project) concatenated with the instance name and a random string. For example: `example-project-sample-node0001-5f3a`. The random string is used to avoid security group name conflicts.
 
-#### Ingress/Egress rules
+The egress/ingress rules are defined by the following variables:
 
-The ingress/egress rules are defined by the following variables:
-
-- `var.default_ingress_sg_rules`
 - `var.default_egress_sg_rules`
-- `var.instances.ingress_sg_rules`
+- `var.default_ingress_sg_rules`
 - `var.instances.egress_sg_rules`
+- `var.instances.ingress_sg_rules`
 - `var.instances.add_default_ingress_sg_rules`
 - `var.instances.add_default_egress_sg_rules`
-- `var.ssh.allowed_cidr_blocks`
-- `var.ssh.port`
 
 Security group rules have the following syntax:
 
@@ -184,13 +226,7 @@ Security group rules have the following syntax:
 }
 ```
 
-##### Default ingress/egress rules
-
-The default ingress/egress rules are applied to all instances security groups. It could be included to the instances security group if `var.instances.add_default_ingress_sg_rules` and/or `var.instances.add_default_egress_sg_rules` is set to `true`.
-
-##### Instance ingress/egress rules
-
-Additional ingress/egress rules can be provided to the instance security group using `var.instances.ingress_sg_rules` and `var.instances.egress_sg_rules`.
+The default egress/ingress rules could be included to the instances security group if `var.instances.add_default_ingress_sg_rules` and/or `var.instances.add_default_egress_sg_rules` is/are set to `true`.
 
 ### Network Interfaces
 
@@ -220,15 +256,12 @@ Each instance gets a root EBS volume when creating the instance. However, additi
 ```hcl
 variable "instances" {
   ...
-    additional_disks = optional(
-      map(
-        object({
-          size            = number
-          mount_point     = string
-          volume_id       = optional(string, "")
-          prevent_destroy = optional(bool, false)
-        })
-    ), {})
+    additional_disks = optional(map(object({
+      size            = number
+      mount_point     = string
+      volume_id       = optional(string, "")
+      prevent_destroy = optional(bool, false)
+    })), {})
   ...
 }
 ```
@@ -279,37 +312,28 @@ The resource iterates the map of objects provided by the [instances](#input_inst
   key_name          = optional(string, "")
   availability_zone = string
   disk_size         = optional(number, 8)
-  additional_disks = optional(
-    map(
-      object({
-        size            = number
-        mount_point     = string
-        volume_id       = optional(string, "")
-        prevent_destroy = optional(bool, false)
-      })
-  ), {})
+  additional_disks = optional(map(object({
+    size            = number
+    mount_point     = string
+    volume_id       = optional(string, "")
+    prevent_destroy = optional(bool, false)
+  })), {})
   add_default_egress_sg_rules  = optional(bool, true)
   add_default_ingress_sg_rules = optional(bool, false)
-  egress_sg_rules = optional(
-    map(
-      object({
-        from_port   = number
-        to_port     = number
-        ip_protocol = string
-        cidr_ipv4   = list(string)
-        description = string
-      })
-  ), {})
-  ingress_sg_rules = optional(
-    map(
-      object({
-        from_port   = number
-        to_port     = number
-        ip_protocol = string
-        cidr_ipv4   = list(string)
-        description = string
-      })
-  ), {})
+  egress_sg_rules = optional(map(object({
+    from_port   = number
+    to_port     = number
+    ip_protocol = string
+    cidr_ipv4   = list(string)
+    description = string
+  })), {})
+  ingress_sg_rules = optional(map(object({
+    from_port   = number
+    to_port     = number
+    ip_protocol = string
+    cidr_ipv4   = list(string)
+    description = string
+  })), {})
   tags = optional(map(string), {})
 }
 ```
@@ -321,6 +345,7 @@ The resource iterates the map of objects provided by the [instances](#input_inst
 - `availability_zone` must be a letter that represents the AZ. For example: "a". It will be concatenated with the ([aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region)) region name to create the AZ name.
 - `disk_size` is the root EBS volume size in GB. Default is 8.
 - `additional_disks` is a map of objects to describe additional disks to create/attach to the instance. The key must be a device name. See [EBS Volumes](#ebs-volumes) for more details.
+- `additional_security_groups` is a list of additional security groups to attach to the instance. It must be a key from the `security_groups` map. See [Security Groups](#security-groups) for more details.
 - `add_default_egress_sg_rules` and `add_default_ingress_sg_rules` are used to add the default sg rules to the instance security group. Default is `true` for `add_default_egress_sg_rules` and `false` for `add_default_ingress_sg_rules`.
 - `egress_sg_rules` and `ingress_sg_rules` are used to add additional sg rules to the instance security group. See [Security Groups](#security-groups) for more details.
 

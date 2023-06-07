@@ -41,10 +41,12 @@ This is an example of how to use the module.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_egress_sg_rules"></a> [egress\_sg\_rules](#output\_egress\_sg\_rules) | Egress security group rules |
-| <a name="output_ingress_sg_rules"></a> [ingress\_sg\_rules](#output\_ingress\_sg\_rules) | Ingress security group rules |
 | <a name="output_instances"></a> [instances](#output\_instances) | Instances configuration |
-| <a name="output_ssh"></a> [ssh](#output\_ssh) | SSH configuration |
+| <a name="output_instances_security_group_egress_rules"></a> [instances\_security\_group\_egress\_rules](#output\_instances\_security\_group\_egress\_rules) | Egress security group rules |
+| <a name="output_instances_security_group_ingress_rules"></a> [instances\_security\_group\_ingress\_rules](#output\_instances\_security\_group\_ingress\_rules) | Ingress security group rules |
+| <a name="output_shared_security_group_egress_rules"></a> [shared\_security\_group\_egress\_rules](#output\_shared\_security\_group\_egress\_rules) | Egress security group rules |
+| <a name="output_shared_security_group_ingress_rules"></a> [shared\_security\_group\_ingress\_rules](#output\_shared\_security\_group\_ingress\_rules) | Ingress security group rules |
+| <a name="output_shared_security_groups_id"></a> [shared\_security\_groups\_id](#output\_shared\_security\_groups\_id) | Shared security groups id |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 <!-- markdownlint-enable MD033 -->
 

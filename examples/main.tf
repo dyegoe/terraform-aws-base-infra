@@ -48,16 +48,47 @@ module "aws_base_infra" {
     ]
   }
 
-  ssh = {
-    port                = 22
-    allowed_cidr_blocks = ["0.0.0.0/0"]
+  security_groups = {
+    "self" = {
+      description = "It allows all ingress traffic from the same security group"
+      ingress = {
+        "self" = {
+          from_port   = -1
+          to_port     = -1
+          ip_protocol = "-1"
+          self        = true
+          description = "All ingress traffic from the same security group - Shared security group"
+        }
+      }
+      egress = {
+        "all" = {
+          from_port   = -1
+          to_port     = -1
+          ip_protocol = "-1"
+          cidr_ipv4   = ["0.0.0.0/0"]
+          description = "All egress traffic - Shared security group"
+        }
+      }
+    }
+    "sample01" = {
+      description = "It is a sample security group"
+      ingress = {
+        "ssh" = {
+          from_port   = 22
+          to_port     = 22
+          ip_protocol = "tcp"
+          cidr_ipv4   = ["0.0.0.0/0"]
+          description = "All ingress http traffic - Shared security group"
+        }
+      }
+    }
   }
 
   default_egress_sg_rules = {
     all_from_allowed = { from_port = -1, to_port = -1, ip_protocol = "-1", cidr_ipv4 = ["0.0.0.0/0"], description = "All traffic from allowed cidr - Default rules" }
   }
   default_ingress_sg_rules = {
-    http = { from_port = 80, to_port = 80, ip_protocol = "tcp", cidr_ipv4 = ["0.0.0.0/0"], description = "HTTP Por - Default rules" }
+    ssh = { from_port = 22, to_port = 22, ip_protocol = "tcp", cidr_ipv4 = ["0.0.0.0/0"], description = "SSH Access - Default rules" }
   }
 
   instances = {
@@ -80,13 +111,14 @@ module "aws_base_infra" {
         #   volume_id   = "vol-0c3eb3655dd853f3c"
         # }
       }
+      additional_security_groups   = ["self"] # Here you can use the security groups created in the security_groups variable
       add_default_egress_sg_rules  = false
       add_default_ingress_sg_rules = false
       egress_sg_rules = {
-        any-to-any = { from_port = -1, to_port = -1, ip_protocol = "-1", cidr_ipv4 = ["0.0.0.0/0"], description = "Any to Any", }
+        any-to-any = { from_port = -1, to_port = -1, ip_protocol = "-1", cidr_ipv4 = ["0.0.0.0/0"], description = "Any to Any - instance rule", }
       }
       ingress_sg_rules = {
-        https = { from_port = 443, to_port = 443, ip_protocol = "tcp", cidr_ipv4 = ["0.0.0.0/0"], description = "HTTPS Port" }
+        ssh = { from_port = 22, to_port = 22, ip_protocol = "tcp", cidr_ipv4 = ["0.0.0.0/0"], description = "SSH Access - instance rule" }
       }
       tags = {
         Additional = "Tag"
@@ -97,15 +129,16 @@ module "aws_base_infra" {
       instance_type                = "t3.nano"
       availability_zone            = "a"
       disk_size                    = 8
+      additional_security_groups   = ["self"]
       add_default_egress_sg_rules  = true # This is an example how to add the default egress sg rules to the instance security group
       add_default_ingress_sg_rules = true # This is an example how to add the default ingress sg rules to the instance security group
     }
     sample-node0002 = {
-      ami_id                       = "ubuntu2204"
-      instance_type                = "t3.nano"
-      availability_zone            = "a"
-      disk_size                    = 8
-      add_default_ingress_sg_rules = true
+      ami_id                     = "ubuntu2204"
+      instance_type              = "t3.nano"
+      availability_zone          = "a"
+      disk_size                  = 8
+      additional_security_groups = ["self", "sample01"]
     }
   }
 }

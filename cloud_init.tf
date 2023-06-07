@@ -15,7 +15,7 @@ data "cloudinit_config" "instance" {
 
     content = templatefile("${path.module}/templates/cloud-config.yaml",
       {
-        ssh_port = var.ssh.port
+        ssh_port = var.ssh_port
       }
     )
   }
