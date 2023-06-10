@@ -318,6 +318,7 @@ The resource iterates the map of objects provided by the [instances](#input_inst
     volume_id       = optional(string, "")
     prevent_destroy = optional(bool, false)
   })), {})
+  additional_security_groups   = optional(list(string), [])
   add_default_egress_sg_rules  = optional(bool, true)
   add_default_ingress_sg_rules = optional(bool, false)
   egress_sg_rules = optional(map(object({
