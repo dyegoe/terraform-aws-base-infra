@@ -24,6 +24,8 @@ This module itends to deploy some base infrasctructure to AWS.
       - [Instance parameters](#instance-parameters)
     - [Cloud-init](#cloud-init)
   - [Examples](#examples)
+  - [Repository](#repository)
+    - [Dependencies](#dependencies)
   - [Authors](#authors)
   - [License](#license)
 
@@ -362,6 +364,23 @@ The [cloudinit_config.instance](https://registry.terraform.io/providers/hashicor
 ## Examples
 
 You can find an example [here](examples/) of how to use this module.
+
+## Repository
+
+### Dependencies
+
+- [Terraform](https://www.terraform.io/downloads.html) `~> 1.4.0`
+  - Although it may work with previous versions, it has not been tested.
+  - I recommend using [tfenv](https://github.com/tfutils/tfenv) to manage Terraform versions.
+- [pre-commit](https://pre-commit.com/) `== 3.3.2`
+  - This repository uses [pre-commit](https://pre-commit.com/) hooks to run some validations before committing new changes. You must install it in order to run the hooks.
+  - You can install it using [pip](https://pip.pypa.io/en/stable/installing/): `pip install -r requirements.txt`
+  - Then, install the git hook scripts: `pre-commit install`
+- [terraform-docs](https://terraform-docs.io/user-guide/installation/) `== v0.16.0`
+- [tflint](https://github.com/terraform-linters/tflint) `== v0.46.1`
+- AWS Credentials
+  - You must have AWS credentials configured in order to run `terraform plan` and `terraform apply`.
+  - You can configure it using [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)
 
 ## Authors
 
