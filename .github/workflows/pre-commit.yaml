@@ -19,9 +19,14 @@ jobs:
         ref: ${{ github.event.pull_request.head.ref }}
 
     - uses: dflook/terraform-fmt@v1
-      name: terraform fmt
+      name: terraform fmt root
       with:
-        path: my-terraform-config
+        path: .
+
+    - uses: dflook/terraform-fmt@v1
+      name: terraform fmt examples
+      with:
+        path: examples
 
     - uses: terraform-linters/setup-tflint@v3
       name: Setup TFLint
