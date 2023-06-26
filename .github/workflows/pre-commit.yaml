@@ -7,7 +7,6 @@ on:
       - main
 
 env:
-  TERRAFORM_DOCS_VERSION: v0.16.0
   TFLINT_VERSION: v0.47.0
 
 jobs:
