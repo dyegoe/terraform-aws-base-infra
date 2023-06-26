@@ -377,7 +377,7 @@ You can find an example [here](examples/) of how to use this module.
   - You can install it using [pip](https://pip.pypa.io/en/stable/installing/): `pip install -r requirements.txt`
   - Then, install the git hook scripts: `pre-commit install`
 - [terraform-docs](https://terraform-docs.io/user-guide/installation/) `== v0.16.0`
-- [tflint](https://github.com/terraform-linters/tflint) `== v0.46.1`
+- [tflint](https://github.com/terraform-linters/tflint) `== v0.47.0`
 - AWS Credentials
   - You must have AWS credentials configured in order to run `terraform plan` and `terraform apply`.
   - You can configure it using [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)
