@@ -1,7 +1,7 @@
 config {
   format = "compact"
   #Disables module inspection
-  module = true
+  module = false
   force  = false
 }
 
