@@ -1,0 +1,51 @@
+---
+name: Pull Request
+
+on:
+  pull_request:
+    branches:
+      - main
+
+env:
+  TFLINT_VERSION: v0.47.0
+
+jobs:
+  pull-request:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
+
+    - uses: dflook/terraform-fmt@v1
+      name: terraform fmt root
+      with:
+        path: .
+
+    - uses: dflook/terraform-fmt@v1
+      name: terraform fmt examples
+      with:
+        path: examples
+
+    - uses: terraform-linters/setup-tflint@v3
+      name: Setup TFLint
+      with:
+        tflint_version: ${{ env.TFLINT_VERSION }}
+
+    - name: Show version
+      run: tflint --version
+
+    - name: Init TFLint
+      run: tflint --init
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Run TFLint
+      run: tflint --recursive -c .tflint.hcl
+
+    - name: Render terraform docs inside the README.md and push changes back to PR branch
+      uses: terraform-docs/gh-actions@v1.0.0
+      with:
+        working-dir: .
+        config-file: .terraform-docs.yml
+        git-push: "true"

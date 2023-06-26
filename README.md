@@ -71,7 +71,7 @@ module "aws_base_infra" {
 ```
 
 <!-- markdownlint-disable MD033 -->
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -153,7 +153,7 @@ module "aws_base_infra" {
 | <a name="output_shared_security_group_egress_rules"></a> [shared\_security\_group\_egress\_rules](#output\_shared\_security\_group\_egress\_rules) | It returns an object of shared security group egress rules. |
 | <a name="output_shared_security_group_ingress_rules"></a> [shared\_security\_group\_ingress\_rules](#output\_shared\_security\_group\_ingress\_rules) | It returns an object of shared security group ingress rules. |
 | <a name="output_shared_security_groups_id"></a> [shared\_security\_groups\_id](#output\_shared\_security\_groups\_id) | It returns an object of shared security groups id. |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->
 <!-- markdownlint-enable MD033 -->
 
 ## Components
@@ -377,7 +377,7 @@ You can find an example [here](examples/) of how to use this module.
   - You can install it using [pip](https://pip.pypa.io/en/stable/installing/): `pip install -r requirements.txt`
   - Then, install the git hook scripts: `pre-commit install`
 - [terraform-docs](https://terraform-docs.io/user-guide/installation/) `== v0.16.0`
-- [tflint](https://github.com/terraform-linters/tflint) `== v0.46.1`
+- [tflint](https://github.com/terraform-linters/tflint) `== v0.47.0`
 - AWS Credentials
   - You must have AWS credentials configured in order to run `terraform plan` and `terraform apply`.
   - You can configure it using [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)
