@@ -1,14 +1,15 @@
 output "instances" {
   description = "It returns an object of all instances created by the module."
   value = {
-    for instance, _ in var.instances : instance => {
+    for instance, i in var.instances : instance => {
       ami                 = nonsensitive(aws_instance.this[instance].ami)
       availability_zone   = data.aws_subnet.instance[instance].availability_zone
       id                  = aws_instance.this[instance].id
       type                = aws_instance.this[instance].instance_type
       private_ip          = aws_instance.this[instance].private_ip
-      public_ip           = aws_eip.instance[instance].public_ip
-      route53             = aws_route53_record.public[instance].name
+      public_ip           = try(aws_eip.instance[instance].public_ip, null)
+      internal_dns        = aws_route53_record.internal[instance].name
+      public_dns          = try(aws_route53_record.public[instance].name, null)
       random_id_sg        = random_id.instance_sg[instance].hex
       security_group_id   = aws_security_group.instance[instance].id
       security_group_name = aws_security_group.instance[instance].name
