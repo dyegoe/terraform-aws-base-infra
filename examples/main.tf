@@ -91,6 +91,8 @@ module "aws_base_infra" {
     ssh = { from_port = 22, to_port = 22, ip_protocol = "tcp", cidr_ipv4 = ["0.0.0.0/0"], description = "SSH Access - Default rules" }
   }
 
+  assign_public_ip = false
+
   instances = {
     sample-master01 = {
       ami_id            = data.aws_ssm_parameter.ami_id.value # This is an example how to use a SSM parameter to get the AMI ID
@@ -139,6 +141,7 @@ module "aws_base_infra" {
       availability_zone          = "a"
       disk_size                  = 8
       additional_security_groups = ["self", "sample01"]
+      assign_public_ip           = true
     }
   }
 }

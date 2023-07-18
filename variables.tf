@@ -139,6 +139,13 @@ It must be between 1 and 15 characters long.
   }
 }
 
+##### Public IPs
+variable "assign_public_ip" {
+  description = "Assign public IP to instances. You can override this value for each instance."
+  type        = bool
+  default     = true
+}
+
 ##### Instances
 variable "instances" {
   description = <<EOT
@@ -157,6 +164,7 @@ To add the default sg rules to the instance security group, set `add_default_egr
     key_name          = optional(string, "")
     availability_zone = string
     disk_size         = optional(number, 8)
+    assign_public_ip  = optional(bool, null)
     additional_disks = optional(map(object({
       size            = number
       mount_point     = string
