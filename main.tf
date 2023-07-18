@@ -173,6 +173,12 @@ locals {
       tags              = a.tags
     } if a.volume_id != ""
   }
+  ##### Create a map of instances that need to associate a public ip
+  instances_with_public_ip = {
+    for instance, i in var.instances : instance => {
+      tags = i.tags
+    } if i.assign_public_ip == null ? var.assign_public_ip : i.assign_public_ip
+  }
   ##### Pre-defined AMIs
   ami_ids = {
     amzn2      = data.aws_ssm_parameter.amzn2.value

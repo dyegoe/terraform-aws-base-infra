@@ -1,20 +1,13 @@
 resource "aws_route53_record" "public" {
-  for_each = {
-    for instance, i in aws_eip.instance : instance => {
-      public_ip = i.public_ip
-    }
-  }
+  for_each = local.instances_with_public_ip
 
   zone_id = data.aws_route53_zone.current.zone_id
   name    = "${each.key}.${local.zone_domain}"
   type    = "A"
   ttl     = "300"
-  records = [each.value.public_ip]
+  records = [aws_eip.instance[each.key].public_ip]
 
-  depends_on = [
-    module.vpc,
-    aws_eip.instance,
-  ]
+  depends_on = [module.vpc]
 }
 
 resource "aws_route53_zone" "internal" {
@@ -42,8 +35,5 @@ resource "aws_route53_record" "internal" {
   ttl     = "300"
   records = [aws_instance.this[each.key].private_ip]
 
-  depends_on = [
-    module.vpc,
-    aws_instance.this,
-  ]
+  depends_on = [module.vpc]
 }

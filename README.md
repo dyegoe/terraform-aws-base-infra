@@ -237,7 +237,7 @@ Because of a limitation of the [aws_instance](https://registry.terraform.io/prov
 
 ### EIPs
 
-There is a possibility to define the default behaviour of assigning EIPs to the instances but you can override it specifying the `eip` attribute in the [instances](#input_instances) variable.
+There is a possibility to define the default behaviour of assigning EIPs to the instances by setting the [assign_public_ip](#input_assign_public_ip) variable. If not provided, it will be set to `true` by default. But you can override it specifying the `assign_public_ip` attribute in the [instances](#input_instances) variable.
 
 The EIP name is the [project name](#input_project) concatenated with the instance name. For example: `example-project-sample-node0001`.
 

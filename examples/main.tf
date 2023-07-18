@@ -134,7 +134,6 @@ module "aws_base_infra" {
       additional_security_groups   = ["self"]
       add_default_egress_sg_rules  = true # This is an example how to add the default egress sg rules to the instance security group
       add_default_ingress_sg_rules = true # This is an example how to add the default ingress sg rules to the instance security group
-      assign_public_ip             = true
     }
     sample-node0002 = {
       ami_id                     = "ubuntu2204"
