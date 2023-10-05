@@ -59,7 +59,7 @@ Tags are applied to all resources for the VPC.
 
   validation {
     condition     = length(var.vpc.azs) == length(var.vpc.public_subnets)
-    error_message = "Number of private subnets must match the number of availability zones"
+    error_message = "Number of public subnets must match the number of availability zones"
   }
 }
 
