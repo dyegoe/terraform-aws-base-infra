@@ -168,6 +168,7 @@ To add the default sg rules to the instance security group, set `add_default_egr
     additional_disks = optional(map(object({
       size            = number
       mount_point     = string
+      mount_mode      = optional(string, "0755")
       volume_id       = optional(string, "")
       prevent_destroy = optional(bool, false)
     })), {})
