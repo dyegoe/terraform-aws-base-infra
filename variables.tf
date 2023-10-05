@@ -36,6 +36,7 @@ variable "instances" {
     additional_disks = map(object({ # Let it empty if there aren't any additional disks
       size            = number
       mount_point     = string
+      mount_mode      = string
       volume_id       = string
       prevent_destroy = bool
     }))

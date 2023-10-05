@@ -21,7 +21,7 @@ locals {
         size              = d.size
         volume_id         = d.volume_id
         prevent_destroy   = d.prevent_destroy == false ? false : true
-        tags              = merge({ "mount_point" = d.mount_point }, i.tags)
+        tags              = merge({ "mount_point" = d.mount_point, "mount_mode" = d.mount_mode }, i.tags)
       }
     ]
   ])
