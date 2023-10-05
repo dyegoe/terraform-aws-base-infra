@@ -1,9 +1,9 @@
 terraform {
-  required_version = "~> 1.4.0"
+  required_version = "~> 1.6.0"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0.1"
+      version = "~> 5.19.0"
     }
   }
 }
@@ -104,6 +104,7 @@ module "aws_base_infra" {
         sdb = {
           size        = 1
           mount_point = "/mnt/sdb"
+          mount_mode  = "0710"
           # prevent_destroy = true # This is an example how to prevent the volume to be destroyed
         }
         # This an example how to add an existing volume to the instance
