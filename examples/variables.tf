@@ -7,7 +7,7 @@ variable "region" {
 variable "project" {
   type        = string
   default     = "example-project"
-  description = "Project name"
+  description = "Project name to use for all resources"
 }
 
 variable "default_tags" {
@@ -17,5 +17,5 @@ variable "default_tags" {
     Environment = "dev"
     Terraform   = "true"
   }
-  description = "Default tags"
+  description = "Default tags to apply to all resources"
 }
