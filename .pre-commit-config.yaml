@@ -18,3 +18,5 @@ repos:
       - id: detect-aws-credentials
       - id: trailing-whitespace
       - id: end-of-file-fixer
+        # exclude json files
+        exclude: '\.json$'
