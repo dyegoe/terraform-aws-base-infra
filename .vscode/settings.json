@@ -7,6 +7,6 @@
     ".github/workflows/*.yml": "github-actions-workflow",
   },
   "yaml.schemas": {
-    "templates/cloud-config.yaml": "https://raw.githubusercontent.com/canonical/cloud-init/main/cloudinit/config/schemas/schema-cloud-config-v1.json"
+    "https://raw.githubusercontent.com/canonical/cloud-init/main/cloudinit/config/schemas/versions.schema.cloud-config.json": "cloud-config.yaml",
   },
 }
