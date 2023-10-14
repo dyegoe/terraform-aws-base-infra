@@ -1,6 +1,6 @@
 {
   "files.associations": {
-    "templates/cloud-config.yaml": "yaml",
+    "cloud-config.yaml": "yaml",
     ".pre-commit-config.yaml": "yaml",
     ".pre-commit-hooks.yaml": "yaml",
     ".github/workflows/*.yaml": "github-actions-workflow",
