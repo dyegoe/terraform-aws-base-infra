@@ -1,12 +1,12 @@
 {
   "files.associations": {
-    "templates/cloud-config.yaml": "yaml",
+    "cloud-config.yaml": "yaml",
     ".pre-commit-config.yaml": "yaml",
     ".pre-commit-hooks.yaml": "yaml",
     ".github/workflows/*.yaml": "github-actions-workflow",
     ".github/workflows/*.yml": "github-actions-workflow",
   },
   "yaml.schemas": {
-    "templates/cloud-config.yaml": "https://raw.githubusercontent.com/canonical/cloud-init/main/cloudinit/config/schemas/schema-cloud-config-v1.json"
+    "https://raw.githubusercontent.com/canonical/cloud-init/main/cloudinit/config/schemas/versions.schema.cloud-config.json": "cloud-config.yaml",
   },
 }
