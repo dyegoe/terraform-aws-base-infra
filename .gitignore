@@ -1,3 +1,6 @@
+# Ignore local .vscode directory
+.vscode/
+
 # Local .terraform directories
 **/.terraform/*
 
